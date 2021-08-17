@@ -22,6 +22,8 @@ pub struct SiteConfig {
 	pub title: String,
 	/// The site's description? Not sure if this will actually be used or not
 	pub description: String,
+	/// The site's build directory. Defaults to <site>/build if not specified.
+	pub build: Option<String>,
 }
 
 /// Struct for the front matter in templates. (nothing here yet)
@@ -143,7 +145,10 @@ struct SiteBuilder<'a> {
 impl<'a> SiteBuilder<'a> {
 	/// Creates a new site builder.
 	pub fn new(site: &'a Site, local_mode: Option<String>) -> Self {
-		let build_path = site.site_path.join("build");
+		let build_path = match &site.config.build {
+			Some(build) => site.site_path.join(build),
+			_ => site.site_path.join("build"),
+		};
 
 		Self {
 			matter: Matter::new(),
