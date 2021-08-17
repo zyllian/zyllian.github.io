@@ -164,10 +164,22 @@ impl<'a> SiteBuilder<'a> {
 		if std::fs::try_exists(&self.build_path)
 			.context("Failed check if build directory exists")?
 		{
-			std::fs::remove_dir_all(&self.build_path)
-				.context("Failed to remove old build directory")?;
+			std::fs::remove_dir_all(self.build_path.join("static"))
+				.context("Failed to remove static directory")?;
+			for entry in WalkDir::new(&self.build_path) {
+				let entry = entry?;
+				let path = entry.path();
+				if let Some(ext) = path.extension() {
+					if ext == "html" {
+						std::fs::remove_file(path).with_context(|| {
+							format!("Failed to remove file at {}", path.display())
+						})?;
+					}
+				}
+			}
+		} else {
+			std::fs::create_dir(&self.build_path).context("Failed to create build directory")?;
 		}
-		std::fs::create_dir(&self.build_path).context("Failed to create build directory")?;
 
 		for (template_name, template_path) in &self.site.template_index {
 			self.reg
