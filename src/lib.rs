@@ -1,4 +1,8 @@
 #![feature(path_try_exists)]
+#![feature(async_closure)]
+
+#[cfg(feature = "serve")]
+pub mod serving;
 
 use std::{
 	collections::HashMap,
@@ -12,6 +16,10 @@ use lol_html::{element, html_content::ContentType, HtmlRewriter, Settings};
 use pulldown_cmark::{Options, Parser};
 use serde::{Deserialize, Serialize};
 use walkdir::WalkDir;
+
+const PAGES_PATH: &str = "pages";
+const TEMPLATES_PATH: &str = "templates";
+const STATIC_PATH: &str = "static";
 
 /// Struct for the site's configuration.
 #[derive(Debug, Deserialize)]
@@ -69,7 +77,7 @@ impl Site {
 		.context("Failed to parse site config")?;
 
 		let mut template_index = HashMap::new();
-		let templates_path = site_path.join("templates");
+		let templates_path = site_path.join(TEMPLATES_PATH);
 		for entry in WalkDir::new(&templates_path).into_iter() {
 			let entry = entry.context("Failed to read template entry")?;
 			let path = entry.path();
@@ -89,7 +97,7 @@ impl Site {
 		}
 
 		let mut page_index = HashMap::new();
-		let pages_path = site_path.join("pages");
+		let pages_path = site_path.join(PAGES_PATH);
 		for entry in WalkDir::new(&pages_path).into_iter() {
 			let entry = entry.context("Failed to read page entry")?;
 			let path = entry.path();
@@ -117,9 +125,16 @@ impl Site {
 	}
 
 	/// Builds the site once.
-	pub fn build_once(&self) -> anyhow::Result<()> {
-		let builder = SiteBuilder::new(self, None).prepare()?;
+	pub fn build_once(self) -> anyhow::Result<()> {
+		let builder = SiteBuilder::new(self, false).prepare()?;
 
+		builder.site.build_all_pages(&builder)?;
+
+		Ok(())
+	}
+
+	/// Helper method to build all available pages.
+	fn build_all_pages(&self, builder: &SiteBuilder) -> anyhow::Result<()> {
 		for page_name in self.page_index.keys() {
 			builder.build_page(page_name)?;
 		}
@@ -135,27 +150,30 @@ struct SiteBuilder<'a> {
 	/// The Handlebars registry used to render templates.
 	reg: Handlebars<'a>,
 	/// The site info used to build the site.
-	site: &'a Site,
+	site: Site,
 	/// The path to the build directory.
 	build_path: PathBuf,
-	/// Whether the site should be build for viewing locally without a server.
-	local_mode: Option<String>,
+	/// Whether the site is going to be served locally with the dev server.
+	serving: bool,
 }
 
 impl<'a> SiteBuilder<'a> {
 	/// Creates a new site builder.
-	pub fn new(site: &'a Site, local_mode: Option<String>) -> Self {
-		let build_path = match &site.config.build {
+	pub fn new(site: Site, serving: bool) -> Self {
+		let mut build_path = match &site.config.build {
 			Some(build) => site.site_path.join(build),
 			_ => site.site_path.join("build"),
 		};
+		if serving {
+			build_path = site.site_path.join("build");
+		}
 
 		Self {
 			matter: Matter::new(),
 			reg: Handlebars::new(),
 			site,
 			build_path,
-			local_mode,
+			serving,
 		}
 	}
 
@@ -164,7 +182,7 @@ impl<'a> SiteBuilder<'a> {
 		if std::fs::try_exists(&self.build_path)
 			.context("Failed check if build directory exists")?
 		{
-			std::fs::remove_dir_all(self.build_path.join("static"))
+			std::fs::remove_dir_all(self.build_path.join(STATIC_PATH))
 				.context("Failed to remove static directory")?;
 			for entry in WalkDir::new(&self.build_path) {
 				let entry = entry?;
@@ -188,11 +206,18 @@ impl<'a> SiteBuilder<'a> {
 		}
 
 		fs_extra::copy_items(
-			&[self.site.site_path.join("static")],
+			&[self.site.site_path.join(STATIC_PATH)],
 			&self.build_path,
 			&fs_extra::dir::CopyOptions::default(),
 		)
 		.context("Failed to copy static directory")?;
+
+		if self.serving {
+			std::fs::write(
+				self.build_path.join(format!("{}/_dev.js", STATIC_PATH)),
+				include_str!("./refresh_websocket.js"),
+			)?;
+		}
 
 		Ok(self)
 	}
@@ -225,11 +250,17 @@ impl<'a> SiteBuilder<'a> {
 				element_content_handlers: vec![element!("head", |el| {
 					el.prepend(r#"<meta charset="utf-8">"#, ContentType::Html);
 					el.append(&format!("<title>{}</title>", title), ContentType::Html);
-					let base = self
-						.local_mode
-						.as_ref()
-						.unwrap_or(&self.site.config.base_url);
-					el.append(&format!(r#"<base href="{}">"#, base), ContentType::Html);
+					if self.serving {
+						el.append(
+							&format!(r#"<script src="/{}/_dev.js"></script>"#, STATIC_PATH),
+							ContentType::Html,
+						);
+					} else {
+						el.append(
+							&format!(r#"<base href="{}">"#, &self.site.config.base_url),
+							ContentType::Html,
+						);
+					}
 
 					Ok(())
 				})],
