@@ -3,13 +3,20 @@
   "tasks": [
     {
       "type": "cargo",
-      "command": "run",
+      "command": "watch",
+      "args": ["-x", "run -- serve"],
       "problemMatcher": ["$rustc"],
-      "label": "rust: cargo run",
+      "label": "dev serve site",
       "group": {
         "kind": "build",
         "isDefault": true
       }
+    },
+    {
+      "type": "cargo",
+      "command": "run",
+      "problemMatcher": ["$rustc"],
+      "label": "build site"
     }
   ]
 }
