@@ -231,45 +231,40 @@ impl Site {
 			.or(warp::any().and(warp::get()).and(
 				warp::path::full()
 					.and(with_build_path(build_path.clone()))
-					.and_then(
-						async move |path: FullPath,
-						            build_path: PathBuf|
-						            -> Result<Response, warp::Rejection> {
-							// Serve static files
-							let p = &path.as_str()[1..];
+					.and_then(move |path: FullPath, build_path: PathBuf| async move {
+						// Serve static files
+						let p = &path.as_str()[1..];
 
-							if p == "static/_dev.js" {
-								let res =
-									Response::new(include_str!("./refresh_websocket.js").into());
-								return Ok(res);
-							}
+						if p == "static/_dev.js" {
+							let res = Response::new(include_str!("./refresh_websocket.js").into());
+							return Ok(res);
+						}
 
-							let mut p = build_path.join(p);
+						let mut p = build_path.join(p);
 
-							if !p.exists() {
-								p = p.with_extension("html");
-							}
-							if p.is_dir() {
-								p = p.join("index.html");
-							}
+						if !p.exists() {
+							p = p.with_extension("html");
+						}
+						if p.is_dir() {
+							p = p.join("index.html");
+						}
 
-							if p.exists() {
-								let mut res = Response::new("".into());
-								match std::fs::read_to_string(&p) {
-									Ok(body) => {
-										*res.body_mut() = body.into();
-									}
-									Err(e) => {
-										eprintln!("{}", e);
-										*res.body_mut() = format!("Failed to load: {}", e).into();
-										*res.status_mut() = StatusCode::INTERNAL_SERVER_ERROR;
-									}
+						if p.exists() {
+							let mut res = Response::new("".into());
+							match std::fs::read_to_string(&p) {
+								Ok(body) => {
+									*res.body_mut() = body.into();
 								}
-								return Ok(res);
+								Err(e) => {
+									eprintln!("{}", e);
+									*res.body_mut() = format!("Failed to load: {}", e).into();
+									*res.status_mut() = StatusCode::INTERNAL_SERVER_ERROR;
+								}
 							}
-							Err(warp::reject())
-						},
-					),
+							return Ok(res);
+						}
+						Err(warp::reject())
+					}),
 			))
 			.or(warp::any()
 				.and(warp::path::full())
