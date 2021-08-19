@@ -18,6 +18,7 @@ const PAGES_PATH: &str = "pages";
 const TEMPLATES_PATH: &str = "templates";
 const STATIC_PATH: &str = "static";
 const SASS_PATH: &str = "sass";
+const ROOT_PATH: &str = "root";
 
 /// Struct for the site's configuration.
 #[derive(Debug, Deserialize)]
