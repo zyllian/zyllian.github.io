@@ -207,7 +207,10 @@ impl<'a> SiteBuilder<'a> {
 					),
 				}
 			} else {
-				eprintln!("Sass stylesheet contains invalid UTF-8: {:?}", sheet_path);
+				eprintln!(
+					"Sass stylesheet path contains invalid UTF-8: {:?}",
+					sheet_path
+				);
 			}
 		}
 
