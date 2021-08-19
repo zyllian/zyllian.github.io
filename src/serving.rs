@@ -18,7 +18,7 @@ use warp::{
 	Filter,
 };
 
-use crate::{Site, SiteBuilder, PAGES_PATH, SASS_PATH, STATIC_PATH, TEMPLATES_PATH};
+use crate::{Site, SiteBuilder, PAGES_PATH, ROOT_PATH, SASS_PATH, STATIC_PATH, TEMPLATES_PATH};
 
 fn with_build_path(
 	build_path: PathBuf,
@@ -74,6 +74,8 @@ fn create(
 		if build {
 			builder.build_sass().context("Failed to rebuild Sass")?;
 		}
+	} else if let Ok(root_path) = relative_path.strip_prefix(ROOT_PATH) {
+		std::fs::copy(&path, builder.build_path.join(root_path))?;
 	}
 
 	Ok(())
@@ -105,6 +107,8 @@ fn remove(builder: &mut SiteBuilder, path: &Path, relative_path: &Path) -> anyho
 	} else if let Ok(_sass_path) = relative_path.strip_prefix(SASS_PATH) {
 		builder.build_sass().context("Failed to rebuild Sass")?;
 	}
+
+	// Removing root files is not handled for the time being.
 
 	Ok(())
 }
