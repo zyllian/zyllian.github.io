@@ -12,7 +12,7 @@ enum Mode {
 #[cfg(feature = "serve")]
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-	let site = Site::new(Path::new("site"))?;
+	let site = Site::new(&Path::new("site").canonicalize()?)?;
 
 	let mut mode = Mode::Build;
 	for arg in std::env::args() {
@@ -34,7 +34,7 @@ async fn main() -> anyhow::Result<()> {
 
 #[cfg(not(feature = "serve"))]
 fn main() -> anyhow::Result<()> {
-	let site = Site::new(Path::new("site"))?;
+	let site = Site::new(&Path::new("site").canonicalize()?)?;
 	site.build_once()?;
 
 	println!("Build complete!");
