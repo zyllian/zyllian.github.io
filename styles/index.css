@@ -1,0 +1,21 @@
+body {
+  font-family: sans-serif;
+  margin: 0;
+}
+
+header.main-header {
+  display: block;
+  padding: 4px;
+  background-color: #0ad;
+}
+
+a {
+  text-decoration: none;
+}
+a:hover, a:focus {
+  text-decoration: underline;
+}
+
+main.page {
+  margin: 8px;
+}
