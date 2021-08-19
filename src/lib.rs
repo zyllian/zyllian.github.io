@@ -7,6 +7,7 @@ pub mod serving;
 use std::{
 	collections::HashMap,
 	path::{Path, PathBuf},
+	str::FromStr,
 };
 
 use anyhow::Context;
@@ -16,6 +17,7 @@ use lol_html::{element, html_content::ContentType, HtmlRewriter, Settings};
 use pulldown_cmark::{Options, Parser};
 use serde::{Deserialize, Serialize};
 use walkdir::WalkDir;
+use warp::hyper::Uri;
 
 const PAGES_PATH: &str = "pages";
 const TEMPLATES_PATH: &str = "templates";
@@ -247,23 +249,37 @@ impl<'a> SiteBuilder<'a> {
 		let mut output = Vec::new();
 		let mut rewriter = HtmlRewriter::new(
 			Settings {
-				element_content_handlers: vec![element!("head", |el| {
-					el.prepend(r#"<meta charset="utf-8">"#, ContentType::Html);
-					el.append(&format!("<title>{}</title>", title), ContentType::Html);
-					if self.serving {
-						el.append(
-							&format!(r#"<script src="/{}/_dev.js"></script>"#, STATIC_PATH),
-							ContentType::Html,
-						);
-					} else {
-						el.append(
-							&format!(r#"<base href="{}">"#, &self.site.config.base_url),
-							ContentType::Html,
-						);
-					}
+				element_content_handlers: vec![
+					element!("head", |el| {
+						el.prepend(r#"<meta charset="utf-8">"#, ContentType::Html);
+						el.append(&format!("<title>{}</title>", title), ContentType::Html);
+						if self.serving {
+							el.append(
+								&format!(r#"<script src="/{}/_dev.js"></script>"#, STATIC_PATH),
+								ContentType::Html,
+							);
+						} else {
+							el.append(
+								&format!(r#"<base href="{}">"#, &self.site.config.base_url),
+								ContentType::Html,
+							);
+						}
 
-					Ok(())
-				})],
+						Ok(())
+					}),
+					element!("a", |el| {
+						if let Some(href) = el.get_attribute("href") {
+							if let Ok(uri) = Uri::from_str(&href) {
+								if uri.host().is_some() {
+									el.set_attribute("rel", "noopener noreferrer")?;
+									el.set_attribute("target", "_blank")?;
+								}
+							}
+						}
+
+						Ok(())
+					}),
+				],
 				..Default::default()
 			},
 			|c: &[u8]| output.extend_from_slice(c),
