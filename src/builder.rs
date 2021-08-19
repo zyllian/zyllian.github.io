@@ -11,7 +11,7 @@ use pulldown_cmark::{Options, Parser};
 use serde::Serialize;
 use walkdir::WalkDir;
 
-use crate::{util, PageMetadata, Site, SASS_PATH, STATIC_PATH};
+use crate::{util, PageMetadata, Site, ROOT_PATH, SASS_PATH, STATIC_PATH};
 
 /// Struct containing data to be sent to templates when rendering them.
 #[derive(Debug, Serialize)]
@@ -81,6 +81,15 @@ impl<'a> SiteBuilder<'a> {
 			self.reg
 				.register_template_file(template_name, template_path)
 				.context("Failed to register template file")?;
+		}
+
+		let root_path = self.site.site_path.join(ROOT_PATH);
+		if root_path.exists() {
+			for entry in root_path.read_dir()? {
+				let entry = entry?;
+				let path = entry.path();
+				std::fs::copy(&path, self.build_path.join(path.strip_prefix(&root_path)?))?;
+			}
 		}
 
 		let static_path = self.site.site_path.join(STATIC_PATH);
