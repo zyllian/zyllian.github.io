@@ -57,9 +57,7 @@ impl<'a> SiteBuilder<'a> {
 	/// Prepares the site builder for use.
 	pub fn prepare(mut self) -> anyhow::Result<Self> {
 		let build_static_path = self.build_path.join(STATIC_PATH);
-		if std::fs::try_exists(&self.build_path)
-			.context("Failed check if build directory exists")?
-		{
+		if self.build_path.exists() {
 			if build_static_path.exists() {
 				std::fs::remove_dir_all(&build_static_path)
 					.context("Failed to remove old static directory")?;

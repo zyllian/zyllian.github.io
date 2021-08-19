@@ -1,6 +1,3 @@
-#![feature(path_try_exists)]
-#![feature(async_closure)]
-
 mod builder;
 #[cfg(feature = "serve")]
 pub mod serving;
