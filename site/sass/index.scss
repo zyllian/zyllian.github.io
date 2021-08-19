@@ -11,11 +11,11 @@ header.main-header {
 
 a {
   text-decoration: none;
-}
 
-a:hover,
-a:focus {
-  text-decoration: underline;
+  &:hover,
+  &:focus {
+    text-decoration: underline;
+  }
 }
 
 main.page {

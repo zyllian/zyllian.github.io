@@ -7,6 +7,7 @@ use std::{
 	sync::{Arc, Mutex},
 };
 
+use anyhow::Context;
 use futures::SinkExt;
 use hotwatch::{Event, Hotwatch};
 use warp::{
@@ -17,7 +18,7 @@ use warp::{
 	Filter,
 };
 
-use crate::{Site, SiteBuilder, PAGES_PATH, STATIC_PATH, TEMPLATES_PATH};
+use crate::{Site, SiteBuilder, PAGES_PATH, SASS_PATH, STATIC_PATH, TEMPLATES_PATH};
 
 fn with_build_path(
 	build_path: PathBuf,
@@ -44,6 +45,9 @@ fn create(
 	relative_path: &Path,
 	build: bool,
 ) -> anyhow::Result<()> {
+	if path.is_dir() {
+		return Ok(());
+	}
 	if let Ok(page_path) = relative_path.strip_prefix(PAGES_PATH) {
 		let (_page_name, page_name_str) = get_name(page_path);
 
@@ -66,25 +70,40 @@ fn create(
 		let new_config = serde_yaml::from_str(&std::fs::read_to_string(path)?)?;
 		builder.site.config = new_config;
 		builder.site.build_all_pages(builder)?;
+	} else if let Ok(_sass_path) = relative_path.strip_prefix(SASS_PATH) {
+		if build {
+			builder.build_sass().context("Failed to rebuild Sass")?;
+		}
 	}
 
 	Ok(())
 }
 
 /// Removes an existing resource.
-fn remove(builder: &mut SiteBuilder, _path: &Path, relative_path: &Path) -> anyhow::Result<()> {
+fn remove(builder: &mut SiteBuilder, path: &Path, relative_path: &Path) -> anyhow::Result<()> {
+	if path.is_dir() {
+		return Ok(());
+	}
 	if let Ok(page_path) = relative_path.strip_prefix(PAGES_PATH) {
 		let (page_name, page_name_str) = get_name(page_path);
 
 		builder.site.page_index.remove(&page_name_str);
-		std::fs::remove_file(builder.build_path.join(page_name.with_extension("html")))?;
+		std::fs::remove_file(builder.build_path.join(page_name.with_extension("html")))
+			.with_context(|| format!("Failed to remove page at {:?}", path))?;
 	} else if let Ok(template_path) = relative_path.strip_prefix(TEMPLATES_PATH) {
 		let (_template_name, template_name_str) = get_name(template_path);
 		builder.site.template_index.remove(&template_name_str);
 		builder.reg.unregister_template(&template_name_str);
-		builder.site.build_all_pages(builder)?;
+		builder
+			.site
+			.build_all_pages(builder)
+			.context("Failed to rebuild pages")?;
 	} else if let Ok(_static_path) = relative_path.strip_prefix(STATIC_PATH) {
-		std::fs::remove_file(builder.build_path.join(relative_path))?;
+		let to_remove = builder.build_path.join(relative_path);
+		std::fs::remove_file(&to_remove)
+			.with_context(|| format!("Failed to remove file at {:?}", to_remove))?;
+	} else if let Ok(_sass_path) = relative_path.strip_prefix(SASS_PATH) {
+		builder.build_sass().context("Failed to rebuild Sass")?;
 	}
 
 	Ok(())
@@ -110,6 +129,7 @@ impl Site {
 				eprintln!("Failed to build page {}: {}", page_name, e);
 			}
 		}
+		builder.build_sass().context("Failed to build Sass")?;
 
 		// Map of websocket connections
 		let peers: Arc<Mutex<HashMap<SocketAddr, WebSocket>>> =
@@ -120,7 +140,6 @@ impl Site {
 		let hw_peers = peers.clone();
 		hotwatch
 			.watch(site.site_path.clone(), move |event| {
-				let site_path = builder.site.site_path.canonicalize().unwrap();
 				let peers = hw_peers.clone();
 
 				match (|| match event {
@@ -128,7 +147,7 @@ impl Site {
 						if skip_path(&builder, &path) {
 							Ok(false)
 						} else {
-							let rel = rel(&path, &site_path)?;
+							let rel = rel(&path, &builder.site.site_path)?;
 							println!("CHANGED - {:?}", rel);
 							create(&mut builder, &path, &rel, true)?;
 							Ok::<_, anyhow::Error>(true)
@@ -138,7 +157,7 @@ impl Site {
 						if skip_path(&builder, &path) {
 							Ok(false)
 						} else {
-							let rel = rel(&path, &site_path)?;
+							let rel = rel(&path, &builder.site.site_path)?;
 							println!("CREATED - {:?}", rel);
 							create(&mut builder, &path, &rel, true)?;
 							Ok(true)
@@ -148,7 +167,7 @@ impl Site {
 						if skip_path(&builder, &path) {
 							Ok(false)
 						} else {
-							let rel = rel(&path, &site_path)?;
+							let rel = rel(&path, &builder.site.site_path)?;
 							println!("REMOVED - {:?}", rel);
 							remove(&mut builder, &path, &rel)?;
 							Ok(true)
@@ -158,8 +177,8 @@ impl Site {
 						if skip_path(&builder, &old) && skip_path(&builder, &new) {
 							Ok(false)
 						} else {
-							let old_rel = rel(&old, &site_path)?;
-							let new_rel = rel(&new, &site_path)?;
+							let old_rel = rel(&old, &builder.site.site_path)?;
+							let new_rel = rel(&new, &builder.site.site_path)?;
 							println!("RENAMED - {:?} -> {:?}", old_rel, new_rel);
 							create(&mut builder, &new, &new_rel, false)?;
 							remove(&mut builder, &old, &old_rel)?;
@@ -218,6 +237,13 @@ impl Site {
 						            -> Result<Response, warp::Rejection> {
 							// Serve static files
 							let p = &path.as_str()[1..];
+
+							if p == "static/_dev.js" {
+								let res =
+									Response::new(include_str!("./refresh_websocket.js").into());
+								return Ok(res);
+							}
+
 							let mut p = build_path.join(p);
 
 							if !p.exists() {
@@ -228,8 +254,17 @@ impl Site {
 							}
 
 							if p.exists() {
-								let body = std::fs::read_to_string(&p).unwrap();
-								let res = Response::new(body.into());
+								let mut res = Response::new("".into());
+								match std::fs::read_to_string(&p) {
+									Ok(body) => {
+										*res.body_mut() = body.into();
+									}
+									Err(e) => {
+										eprintln!("{}", e);
+										*res.body_mut() = format!("Failed to load: {}", e).into();
+										*res.status_mut() = StatusCode::INTERNAL_SERVER_ERROR;
+									}
+								}
 								return Ok(res);
 							}
 							Err(warp::reject())
