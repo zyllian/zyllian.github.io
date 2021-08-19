@@ -1,27 +1,26 @@
 #![feature(path_try_exists)]
 #![feature(async_closure)]
 
+mod builder;
 #[cfg(feature = "serve")]
 pub mod serving;
+mod util;
 
 use std::{
 	collections::HashMap,
 	path::{Path, PathBuf},
-	str::FromStr,
 };
 
 use anyhow::Context;
-use gray_matter::{engine::yaml::YAML, matter::Matter};
-use handlebars::Handlebars;
-use lol_html::{element, html_content::ContentType, HtmlRewriter, Settings};
-use pulldown_cmark::{Options, Parser};
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use walkdir::WalkDir;
-use warp::hyper::Uri;
+
+use builder::SiteBuilder;
 
 const PAGES_PATH: &str = "pages";
 const TEMPLATES_PATH: &str = "templates";
 const STATIC_PATH: &str = "static";
+const SASS_PATH: &str = "sass";
 
 /// Struct for the site's configuration.
 #[derive(Debug, Deserialize)]
@@ -34,18 +33,13 @@ pub struct SiteConfig {
 	pub description: String,
 	/// The site's build directory. Defaults to <site>/build if not specified.
 	pub build: Option<String>,
+	/// A list of Sass stylesheets that will be built.
+	pub sass_styles: Vec<PathBuf>,
 }
 
 /// Struct for the front matter in templates. (nothing here yet)
 #[derive(Debug, Default, Deserialize)]
 pub struct TemplateMetadata {}
-
-/// Struct containing data to be sent to templates when rendering them.
-#[derive(Debug, Serialize)]
-struct TemplateData<'a> {
-	/// The rendered page.
-	pub page: &'a str,
-}
 
 /// Struct for the front matter in pages.
 #[derive(Debug, Default, Deserialize)]
@@ -131,6 +125,7 @@ impl Site {
 		let builder = SiteBuilder::new(self, false).prepare()?;
 
 		builder.site.build_all_pages(&builder)?;
+		builder.build_sass()?;
 
 		Ok(())
 	}
@@ -140,171 +135,6 @@ impl Site {
 		for page_name in self.page_index.keys() {
 			builder.build_page(page_name)?;
 		}
-
-		Ok(())
-	}
-}
-
-/// Struct used to build the site.
-struct SiteBuilder<'a> {
-	/// The matter instance used to extract front matter.
-	matter: Matter<YAML>,
-	/// The Handlebars registry used to render templates.
-	reg: Handlebars<'a>,
-	/// The site info used to build the site.
-	site: Site,
-	/// The path to the build directory.
-	build_path: PathBuf,
-	/// Whether the site is going to be served locally with the dev server.
-	serving: bool,
-}
-
-impl<'a> SiteBuilder<'a> {
-	/// Creates a new site builder.
-	pub fn new(site: Site, serving: bool) -> Self {
-		let mut build_path = match &site.config.build {
-			Some(build) => site.site_path.join(build),
-			_ => site.site_path.join("build"),
-		};
-		if serving {
-			build_path = site.site_path.join("build");
-		}
-
-		Self {
-			matter: Matter::new(),
-			reg: Handlebars::new(),
-			site,
-			build_path,
-			serving,
-		}
-	}
-
-	/// Prepares the site builder for use.
-	pub fn prepare(mut self) -> anyhow::Result<Self> {
-		if std::fs::try_exists(&self.build_path)
-			.context("Failed check if build directory exists")?
-		{
-			std::fs::remove_dir_all(self.build_path.join(STATIC_PATH))
-				.context("Failed to remove static directory")?;
-			for entry in WalkDir::new(&self.build_path) {
-				let entry = entry?;
-				let path = entry.path();
-				if let Some(ext) = path.extension() {
-					if ext == "html" {
-						std::fs::remove_file(path).with_context(|| {
-							format!("Failed to remove file at {}", path.display())
-						})?;
-					}
-				}
-			}
-		} else {
-			std::fs::create_dir(&self.build_path).context("Failed to create build directory")?;
-		}
-
-		for (template_name, template_path) in &self.site.template_index {
-			self.reg
-				.register_template_file(template_name, template_path)
-				.context("Failed to register template file")?;
-		}
-
-		fs_extra::copy_items(
-			&[self.site.site_path.join(STATIC_PATH)],
-			&self.build_path,
-			&fs_extra::dir::CopyOptions::default(),
-		)
-		.context("Failed to copy static directory")?;
-
-		if self.serving {
-			std::fs::write(
-				self.build_path.join(format!("{}/_dev.js", STATIC_PATH)),
-				include_str!("./refresh_websocket.js"),
-			)?;
-		}
-
-		Ok(self)
-	}
-
-	/// Builds a page.
-	pub fn build_page(&self, page_name: &str) -> anyhow::Result<()> {
-		let page_path = self.site.page_index.get(page_name).unwrap();
-
-		let input = std::fs::read_to_string(page_path)
-			.with_context(|| format!("Failed to read page at {}", page_path.display()))?;
-		let page = self.matter.parse(&input);
-		let page_metadata = if let Some(data) = page.data {
-			data.deserialize()?
-		} else {
-			PageMetadata::default()
-		};
-
-		let parser = Parser::new_ext(&page.content, Options::all());
-		let mut page_html = String::new();
-		pulldown_cmark::html::push_html(&mut page_html, parser);
-
-		let out = self.reg.render(
-			&page_metadata.template.unwrap_or_else(|| "base".to_string()),
-			&TemplateData { page: &page_html },
-		)?;
-
-		let title = match &page_metadata.title {
-			Some(page_title) => format!("{} / {}", self.site.config.title, page_title),
-			_ => self.site.config.title.clone(),
-		};
-
-		let mut output = Vec::new();
-		let mut rewriter = HtmlRewriter::new(
-			Settings {
-				element_content_handlers: vec![
-					element!("head", |el| {
-						el.prepend(r#"<meta charset="utf-8">"#, ContentType::Html);
-						el.append(&format!("<title>{}</title>", title), ContentType::Html);
-						if self.serving {
-							el.append(
-								&format!(r#"<script src="/{}/_dev.js"></script>"#, STATIC_PATH),
-								ContentType::Html,
-							);
-						} else {
-							el.append(
-								&format!(r#"<base href="{}">"#, &self.site.config.base_url),
-								ContentType::Html,
-							);
-						}
-
-						Ok(())
-					}),
-					element!("a", |el| {
-						if let Some(href) = el.get_attribute("href") {
-							if let Ok(uri) = Uri::from_str(&href) {
-								if uri.host().is_some() {
-									el.set_attribute("rel", "noopener noreferrer")?;
-									el.set_attribute("target", "_blank")?;
-								}
-							}
-						}
-
-						Ok(())
-					}),
-				],
-				..Default::default()
-			},
-			|c: &[u8]| output.extend_from_slice(c),
-		);
-
-		rewriter.write(out.as_bytes())?;
-		rewriter.end()?;
-
-		let out = String::from_utf8(output)?;
-
-		let out_path = self.build_path.join(page_name).with_extension("html");
-		std::fs::create_dir_all(out_path.parent().unwrap())
-			.with_context(|| format!("Failed to create directory for page {}", page_name))?;
-		std::fs::write(&out_path, out).with_context(|| {
-			format!(
-				"Failed to create page file at {} for page {}",
-				out_path.display(),
-				page_name
-			)
-		})?;
 
 		Ok(())
 	}
