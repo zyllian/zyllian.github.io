@@ -2148,6 +2148,7 @@ dependencies = [
  "gray_matter",
  "handlebars",
  "hotwatch",
+ "http",
  "lol_html",
  "pulldown-cmark",
  "serde",
