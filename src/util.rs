@@ -4,10 +4,6 @@ use std::path::Path;
 
 /// Simple helper to remove the contents of a directory without removing the directory itself.
 pub fn remove_dir_contents(path: &Path) -> anyhow::Result<()> {
-	if !path.exists() {
-		std::fs::create_dir_all(path)?;
-		return Ok(());
-	}
 	for entry in path.read_dir()? {
 		let entry = entry?;
 		let path = entry.path();
