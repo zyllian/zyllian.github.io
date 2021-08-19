@@ -16,7 +16,7 @@ use warp::{
 	Filter,
 };
 
-use crate::{Site, SiteBuilder, PAGES_PATH, TEMPLATES_PATH};
+use crate::{Site, SiteBuilder, PAGES_PATH, STATIC_PATH, TEMPLATES_PATH};
 
 fn with_build_path(
 	build_path: PathBuf,
@@ -59,8 +59,12 @@ fn create(
 		if build {
 			builder.site.build_all_pages(builder)?;
 		}
-	} else {
-		anyhow::anyhow!("ahh");
+	} else if let Ok(_static_path) = relative_path.strip_prefix(STATIC_PATH) {
+		std::fs::copy(path, builder.build_path.join(relative_path))?;
+	} else if relative_path.display().to_string() == "config.yaml" {
+		let new_config = serde_yaml::from_str(&std::fs::read_to_string(path)?)?;
+		builder.site.config = new_config;
+		builder.site.build_all_pages(builder)?;
 	}
 
 	Ok(())
@@ -78,10 +82,16 @@ fn remove(builder: &mut SiteBuilder, _path: &Path, relative_path: &Path) -> anyh
 		builder.site.template_index.remove(&template_name_str);
 		builder.reg.unregister_template(&template_name_str);
 		builder.site.build_all_pages(builder)?;
-	} else {
-		anyhow::anyhow!("ahh");
+	} else if let Ok(_static_path) = relative_path.strip_prefix(STATIC_PATH) {
+		std::fs::remove_file(builder.build_path.join(relative_path))?;
 	}
+
 	Ok(())
+}
+
+/// Decides whether to skip a path in the watcher.
+fn skip_path(builder: &SiteBuilder, path: &Path) -> bool {
+	path.strip_prefix(&builder.build_path).is_ok()
 }
 
 impl Site {
@@ -114,30 +124,46 @@ impl Site {
 
 				match (|| match event {
 					Event::Write(path) => {
-						let rel = rel(&path, &site_path)?;
-						println!("CHANGED - {:?}", rel);
-						create(&mut builder, &path, &rel, true)?;
-						Ok::<_, anyhow::Error>(true)
+						if skip_path(&builder, &path) {
+							Ok(false)
+						} else {
+							let rel = rel(&path, &site_path)?;
+							println!("CHANGED - {:?}", rel);
+							create(&mut builder, &path, &rel, true)?;
+							Ok::<_, anyhow::Error>(true)
+						}
 					}
 					Event::Create(path) => {
-						let rel = rel(&path, &site_path)?;
-						println!("CREATED - {:?}", rel);
-						create(&mut builder, &path, &rel, true)?;
-						Ok(true)
+						if skip_path(&builder, &path) {
+							Ok(false)
+						} else {
+							let rel = rel(&path, &site_path)?;
+							println!("CREATED - {:?}", rel);
+							create(&mut builder, &path, &rel, true)?;
+							Ok(true)
+						}
 					}
 					Event::Remove(path) => {
-						let rel = rel(&path, &site_path)?;
-						println!("REMOVED - {:?}", rel);
-						remove(&mut builder, &path, &rel)?;
-						Ok(true)
+						if skip_path(&builder, &path) {
+							Ok(false)
+						} else {
+							let rel = rel(&path, &site_path)?;
+							println!("REMOVED - {:?}", rel);
+							remove(&mut builder, &path, &rel)?;
+							Ok(true)
+						}
 					}
 					Event::Rename(old, new) => {
-						let old_rel = rel(&old, &site_path)?;
-						let new_rel = rel(&new, &site_path)?;
-						println!("RENAMED - {:?} -> {:?}", old_rel, new_rel);
-						create(&mut builder, &new, &new_rel, false)?;
-						remove(&mut builder, &old, &old_rel)?;
-						Ok(true)
+						if skip_path(&builder, &old) && skip_path(&builder, &new) {
+							Ok(false)
+						} else {
+							let old_rel = rel(&old, &site_path)?;
+							let new_rel = rel(&new, &site_path)?;
+							println!("RENAMED - {:?} -> {:?}", old_rel, new_rel);
+							create(&mut builder, &new, &new_rel, false)?;
+							remove(&mut builder, &old, &old_rel)?;
+							Ok(true)
+						}
 					}
 					_ => Ok(false),
 				})() {
