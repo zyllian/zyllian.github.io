@@ -10,6 +10,7 @@ use std::{
 use futures::SinkExt;
 use hotwatch::{Event, Hotwatch};
 use warp::{
+	hyper::StatusCode,
 	path::FullPath,
 	reply::Response,
 	ws::{Message, WebSocket},
@@ -242,9 +243,13 @@ impl Site {
 					async move {
 						// Handle missing files
 						println!("404 - {}", path.as_str());
-						Ok::<_, std::convert::Infallible>(warp::reply::html(
-							std::fs::read_to_string(build_path.join("404.html")).unwrap(),
-						))
+						let body = match std::fs::read_to_string(build_path.join("404.html")) {
+							Ok(body) => body,
+							_ => "404 Not Found".to_string(),
+						};
+						let mut res = Response::new(body.into());
+						*res.status_mut() = StatusCode::NOT_FOUND;
+						Ok::<_, std::convert::Infallible>(res)
 					}
 				}));
 
