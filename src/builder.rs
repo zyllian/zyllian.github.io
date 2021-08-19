@@ -184,6 +184,9 @@ impl<'a> SiteBuilder<'a> {
 	/// Builds the Sass styles in the site.
 	pub fn build_sass(&self) -> anyhow::Result<()> {
 		let styles_path = self.build_path.join("styles");
+		if !styles_path.exists() {
+			std::fs::create_dir(&styles_path)?;
+		}
 		if self.serving {
 			util::remove_dir_contents(&styles_path)
 				.context("Failed to remove old contents of styles directory")?;
