@@ -5,11 +5,11 @@ use std::{path::PathBuf, str::FromStr};
 use anyhow::Context;
 use gray_matter::{engine::YAML, Matter};
 use handlebars::Handlebars;
+use http::Uri;
 use lol_html::{element, html_content::ContentType, HtmlRewriter, Settings};
 use pulldown_cmark::{Options, Parser};
 use serde::Serialize;
 use walkdir::WalkDir;
-use warp::hyper::Uri;
 
 use crate::{util, PageMetadata, Site, SASS_PATH, STATIC_PATH};
 

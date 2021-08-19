@@ -12,6 +12,7 @@ grass = "0.10"
 gray_matter = "0.2"
 handlebars = "4.1"
 hotwatch = { version = "0.4", optional = true }
+http = "0.2"
 lol_html = "0.3"
 pulldown-cmark = { version = "0.8", default-features = false, features = ["simd"] }
 serde = { version = "1", features = ["derive"] }
