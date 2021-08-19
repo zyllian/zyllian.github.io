@@ -1,16 +1,32 @@
 body {
   font-family: sans-serif;
   margin: 0;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  height: 100vh;
+  --bg-color: #eee;
+  --text-color: black;
+  --accent-color: #0ad;
+  --accent-text-color: var(--text-color);
+}
+@media (prefers-color-scheme: dark) {
+  body {
+    --bg-color: #333;
+    --text-color: #aaa;
+    --accent-text-color: var(--bg-color);
+  }
 }
 
 header.main-header {
   display: block;
   padding: 4px;
-  background-color: #0ad;
+  background-color: var(--accent-color);
+  color: var(--accent-text-color);
 }
 
 a {
   text-decoration: none;
+  color: var(--accent-color);
 }
 a:hover, a:focus {
   text-decoration: underline;
