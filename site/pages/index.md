@@ -1,5 +1,7 @@
-# Welcome
+# Zoey's Website
 
-Welcome to the site!
+Welcome to the site! It's still very much a work in progress.
 
-Testing a change.
+Links:
+
+- [GitHub](https://github.com/Zoeycode)
