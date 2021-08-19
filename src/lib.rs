@@ -37,7 +37,7 @@ pub struct SiteConfig {
 }
 
 /// Struct for the front matter in templates. (nothing here yet)
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Default, Deserialize)]
 pub struct TemplateMetadata {}
 
 /// Struct containing data to be sent to templates when rendering them.
@@ -48,7 +48,7 @@ struct TemplateData<'a> {
 }
 
 /// Struct for the front matter in pages.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Default, Deserialize)]
 pub struct PageMetadata {
 	/// The page's title.
 	pub title: Option<String>,
@@ -230,18 +230,23 @@ impl<'a> SiteBuilder<'a> {
 
 		let input = std::fs::read_to_string(page_path)
 			.with_context(|| format!("Failed to read page at {}", page_path.display()))?;
-		let page = self.matter.matter_struct::<PageMetadata>(input);
+		let page = self.matter.parse(&input);
+		let page_metadata = if let Some(data) = page.data {
+			data.deserialize()?
+		} else {
+			PageMetadata::default()
+		};
 
 		let parser = Parser::new_ext(&page.content, Options::all());
 		let mut page_html = String::new();
 		pulldown_cmark::html::push_html(&mut page_html, parser);
 
 		let out = self.reg.render(
-			&page.data.template.unwrap_or_else(|| "base".to_string()),
+			&page_metadata.template.unwrap_or_else(|| "base".to_string()),
 			&TemplateData { page: &page_html },
 		)?;
 
-		let title = match &page.data.title {
+		let title = match &page_metadata.title {
 			Some(page_title) => format!("{} / {}", self.site.config.title, page_title),
 			_ => self.site.config.title.clone(),
 		};
