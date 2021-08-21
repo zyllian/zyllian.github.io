@@ -2148,12 +2148,12 @@ dependencies = [
  "gray_matter",
  "handlebars",
  "hotwatch",
- "http",
  "lol_html",
  "pulldown-cmark",
  "serde",
  "serde_yaml",
  "tokio",
+ "url",
  "walkdir",
  "warp",
 ]

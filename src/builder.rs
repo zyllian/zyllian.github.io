@@ -1,14 +1,14 @@
 //! Module containing the site builder.
 
-use std::{path::PathBuf, str::FromStr};
+use std::path::PathBuf;
 
 use anyhow::Context;
 use gray_matter::{engine::YAML, Matter};
 use handlebars::Handlebars;
-use http::Uri;
 use lol_html::{element, html_content::ContentType, HtmlRewriter, Settings};
 use pulldown_cmark::{Options, Parser};
 use serde::Serialize;
+use url::Url;
 use walkdir::WalkDir;
 
 use crate::{util, PageMetadata, Site, ROOT_PATH, SASS_PATH, STATIC_PATH};
@@ -155,8 +155,8 @@ impl<'a> SiteBuilder<'a> {
 					}),
 					element!("a", |el| {
 						if let Some(href) = el.get_attribute("href") {
-							if let Ok(uri) = Uri::from_str(&href) {
-								if uri.host().is_some() {
+							if let Ok(href) = Url::parse(&href) {
+								if href.host().is_some() {
 									el.set_attribute("rel", "noopener noreferrer")?;
 									el.set_attribute("target", "_blank")?;
 								}
