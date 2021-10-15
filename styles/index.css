@@ -22,6 +22,14 @@ header.main-header {
   padding: 4px;
   background-color: var(--accent-color);
   color: var(--accent-text-color);
+  display: flex;
+  gap: 4px;
+}
+header.main-header a {
+  color: inherit;
+}
+header.main-header .spacer {
+  margin-left: auto;
 }
 
 a {
