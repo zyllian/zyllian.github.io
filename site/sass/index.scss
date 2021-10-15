@@ -22,6 +22,16 @@ header.main-header {
   padding: 4px;
   background-color: var(--accent-color);
   color: var(--accent-text-color);
+  display: flex;
+  gap: 4px;
+
+  a {
+    color: inherit;
+  }
+
+  .spacer {
+    margin-left: auto;
+  }
 }
 
 a {
