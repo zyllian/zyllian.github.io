@@ -1,8 +1,8 @@
 # Zoey's Website
 
-Welcome to the site! It's still very much a work in progress.
+Welcome to the site! There's not really anything here.
 
 Links:
 
-- [GitHub](https://github.com/Zoeycode)
-- [Email](mailto:z@zoey.dev)
+- [GitHub](https://github.com/Zyllian)
+- [Twitter](https://twitter.com/Zylllian) (I don't post here much)
