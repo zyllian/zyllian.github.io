@@ -6,14 +6,14 @@ body {
   height: 100vh;
   --bg-color: #eee;
   --text-color: black;
-  --accent-color: #0ad;
-  --accent-text-color: var(--text-color);
+  --accent-color: #b520e7;
+  --accent-text-color: var(--bg-color);
 }
 @media (prefers-color-scheme: dark) {
   body {
     --bg-color: #333;
-    --text-color: #aaa;
-    --accent-text-color: var(--bg-color);
+    --text-color: #ccc;
+    --accent-text-color: black;
   }
 }
 
@@ -42,4 +42,8 @@ a:hover, a:focus {
 
 main.page {
   margin: 8px;
+}
+
+abbr {
+  cursor: help;
 }
