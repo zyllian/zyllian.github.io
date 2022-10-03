@@ -174,7 +174,10 @@ impl<'a> SiteBuilder<'a> {
 		rewriter.write(out.as_bytes())?;
 		rewriter.end()?;
 
-		let out = String::from_utf8(output)?;
+		let mut out = String::from_utf8(output)?;
+		if !self.serving {
+			out = minifier::html::minify(&out);
+		}
 
 		let out_path = self.build_path.join(page_name).with_extension("html");
 		std::fs::create_dir_all(out_path.parent().unwrap())
@@ -205,7 +208,12 @@ impl<'a> SiteBuilder<'a> {
 			let sheet_path = sass_path.join(sheet);
 			if let Some(sheet_path) = sheet_path.to_str() {
 				match grass::from_path(sheet_path, &grass::Options::default()) {
-					Ok(css) => {
+					Ok(mut css) => {
+						if !self.serving {
+							css = minifier::css::minify(&css)
+								.map_err(|err| anyhow::anyhow!(err))?
+								.to_string();
+						}
 						std::fs::write(styles_path.join(sheet).with_extension("css"), css)
 							.with_context(|| {
 								format!("Failed to write new CSS file for Sass: {:?}", sheet)
