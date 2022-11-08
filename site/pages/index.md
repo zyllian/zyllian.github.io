@@ -1,7 +1,11 @@
 # Zoey's Website
 
-Welcome! I'm Zoey (aka Zyllian), a trans woman living in the <abbr title="Pacific Northwest">PNW</abbr>. There's not a whole lot here, so here are some links to other places I'm at:
+Welcome! I'm Zoey (not really), a trans woman in the <abbr title="Pacific Northwest">PNW</abbr>.
+
+There's not much here, so here are some other places I'm at sometimes:
 
 - [GitHub](https://github.com/Zyllian)
-- [YouTube](https://www.youtube.com/channel/UClXnco_MNJjhyNR_t-2CPpQ) (Mostly short video game clips)
-- [Twitter](https://twitter.com/Zylllian) (I don't post here much)
+- [YouTube](https://youtube.com/@zyllian) (Mostly short video game clips and my cat)
+- [Mastodon](https://mas.to/@zyl)
+- [cohost](https://cohost.org/zyl)
+- [Twitter](https://twitter.com/Zylllian) (Probably won't be posting here anytime soon)
