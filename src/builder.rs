@@ -155,9 +155,14 @@ impl<'a> SiteBuilder<'a> {
 					}),
 					element!("a", |el| {
 						if let Some(href) = el.get_attribute("href") {
+							let me = href == "https://mas.to/@zyl";
 							if let Ok(href) = Url::parse(&href) {
 								if href.host().is_some() {
-									el.set_attribute("rel", "noopener noreferrer")?;
+									let mut rel = String::from("noopener noreferrer");
+									if me {
+										rel.push_str(" me");
+									}
+									el.set_attribute("rel", &rel)?;
 									el.set_attribute("target", "_blank")?;
 								}
 							}
