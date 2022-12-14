@@ -1941,7 +1941,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "zoey"
+name = "zyl"
 version = "0.1.0"
 dependencies = [
  "anyhow",
