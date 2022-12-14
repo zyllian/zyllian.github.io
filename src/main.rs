@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use zoey::Site;
+use zyl::Site;
 
 #[cfg(feature = "serve")]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]

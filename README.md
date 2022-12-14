@@ -1,6 +1,6 @@
-# zoey.dev
+# zyl.gay
 
-Source for my website (located at [zoey.dev](https://zoey.dev)) and the custom static site generator I've built alongside it.
+Source for my website (located at [zyl.gay](https://zyl.gay)) and the custom static site generator I've built alongside it.
 
 Still in progress.
 

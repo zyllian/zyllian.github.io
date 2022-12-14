@@ -75,7 +75,7 @@ fn create(
 			builder.build_sass().context("Failed to rebuild Sass")?;
 		}
 	} else if let Ok(root_path) = relative_path.strip_prefix(ROOT_PATH) {
-		std::fs::copy(&path, builder.build_path.join(root_path))?;
+		std::fs::copy(path, builder.build_path.join(root_path))?;
 	}
 
 	Ok(())
