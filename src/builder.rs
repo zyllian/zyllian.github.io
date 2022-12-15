@@ -11,7 +11,7 @@ use serde::Serialize;
 use url::Url;
 use walkdir::WalkDir;
 
-use crate::{util, PageMetadata, Site, ROOT_PATH, SASS_PATH, STATIC_PATH};
+use crate::{images::ImageMetadata, util, PageMetadata, Site, ROOT_PATH, SASS_PATH, STATIC_PATH};
 
 /// Struct containing data to be sent to templates when rendering them.
 #[derive(Debug, Serialize)]
@@ -102,29 +102,23 @@ impl<'a> SiteBuilder<'a> {
 			.context("Failed to copy static directory")?;
 		}
 
+		let images_path = self.build_path.join(crate::images::IMAGES_OUT_PATH);
+		if !images_path.exists() {
+			std::fs::create_dir(images_path).context("Failed to create images path")?;
+		}
+
 		Ok(self)
 	}
 
-	/// Builds a page.
-	pub fn build_page(&self, page_name: &str) -> anyhow::Result<()> {
-		let page_path = self.site.page_index.get(page_name).unwrap();
-
-		let input = std::fs::read_to_string(page_path)
-			.with_context(|| format!("Failed to read page at {}", page_path.display()))?;
-		let page = self.matter.parse(&input);
-		let page_metadata = if let Some(data) = page.data {
-			data.deserialize()?
-		} else {
-			PageMetadata::default()
-		};
-
-		let parser = Parser::new_ext(&page.content, Options::all());
-		let mut page_html = String::new();
-		pulldown_cmark::html::push_html(&mut page_html, parser);
-
+	/// Helper to build a page without writing it to disk.
+	pub fn build_page_raw(
+		&self,
+		page_metadata: PageMetadata,
+		page_html: &str,
+	) -> anyhow::Result<String> {
 		let out = self.reg.render(
 			&page_metadata.template.unwrap_or_else(|| "base".to_string()),
-			&TemplateData { page: &page_html },
+			&TemplateData { page: page_html },
 		)?;
 
 		let title = match &page_metadata.title {
@@ -184,6 +178,28 @@ impl<'a> SiteBuilder<'a> {
 			out = minifier::html::minify(&out);
 		}
 
+		Ok(out)
+	}
+
+	/// Builds a page.
+	pub fn build_page(&self, page_name: &str) -> anyhow::Result<()> {
+		let page_path = self.site.page_index.get(page_name).expect("Missing page");
+
+		let input = std::fs::read_to_string(page_path)
+			.with_context(|| format!("Failed to read page at {}", page_path.display()))?;
+		let page = self.matter.parse(&input);
+		let page_metadata = if let Some(data) = page.data {
+			data.deserialize()?
+		} else {
+			PageMetadata::default()
+		};
+
+		let parser = Parser::new_ext(&page.content, Options::all());
+		let mut page_html = String::new();
+		pulldown_cmark::html::push_html(&mut page_html, parser);
+
+		let out = self.build_page_raw(page_metadata, &page_html)?;
+
 		let out_path = self.build_path.join(page_name).with_extension("html");
 		std::fs::create_dir_all(out_path.parent().unwrap())
 			.with_context(|| format!("Failed to create directory for page {}", page_name))?;
@@ -237,6 +253,16 @@ impl<'a> SiteBuilder<'a> {
 			}
 		}
 
+		Ok(())
+	}
+
+	/// Builds the site's various image pages.
+	pub fn build_images(&self) -> anyhow::Result<()> {
+		let images = ImageMetadata::load_all(&self.site.site_path)?;
+		ImageMetadata::build_lists(self, &images)?;
+		for (id, image) in images {
+			image.build(self, id)?;
+		}
 		Ok(())
 	}
 }

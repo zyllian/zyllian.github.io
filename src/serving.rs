@@ -18,7 +18,10 @@ use warp::{
 	Filter,
 };
 
-use crate::{Site, SiteBuilder, PAGES_PATH, ROOT_PATH, SASS_PATH, STATIC_PATH, TEMPLATES_PATH};
+use crate::{
+	images::ImageMetadata, Site, SiteBuilder, PAGES_PATH, ROOT_PATH, SASS_PATH, STATIC_PATH,
+	TEMPLATES_PATH,
+};
 
 fn with_build_path(
 	build_path: PathBuf,
@@ -63,6 +66,7 @@ fn create(
 		builder.refresh_template(&template_name_str, path)?;
 		if build {
 			builder.site.build_all_pages(builder)?;
+			builder.build_images()?;
 		}
 	} else if let Ok(_static_path) = relative_path.strip_prefix(STATIC_PATH) {
 		std::fs::copy(path, builder.build_path.join(relative_path))?;
@@ -76,6 +80,9 @@ fn create(
 		}
 	} else if let Ok(root_path) = relative_path.strip_prefix(ROOT_PATH) {
 		std::fs::copy(path, builder.build_path.join(root_path))?;
+	} else if let Ok(_image_path) = relative_path.strip_prefix(crate::images::IMAGES_PATH) {
+		// HACK: this could get very inefficient with a larger number of images. should definitely optimize
+		builder.build_images()?;
 	}
 
 	Ok(())
@@ -108,6 +115,11 @@ fn remove(builder: &mut SiteBuilder, path: &Path, relative_path: &Path) -> anyho
 		builder.build_sass().context("Failed to rebuild Sass")?;
 	} else if let Ok(root_path) = relative_path.strip_prefix(ROOT_PATH) {
 		std::fs::remove_file(builder.build_path.join(root_path))?;
+	} else if let Ok(_image_path) = relative_path.strip_prefix(crate::images::IMAGES_PATH) {
+		let p = ImageMetadata::build_path(&builder.build_path, &ImageMetadata::get_id(path));
+		std::fs::remove_file(p)?;
+		// HACK: same as in `create`
+		builder.build_images()?;
 	}
 
 	Ok(())
@@ -134,6 +146,9 @@ impl Site {
 			}
 		}
 		builder.build_sass().context("Failed to build Sass")?;
+		builder
+			.build_images()
+			.context("Failed to build image pages")?;
 
 		// Map of websocket connections
 		let peers: Arc<Mutex<HashMap<SocketAddr, WebSocket>>> =
@@ -238,13 +253,16 @@ impl Site {
 					.and_then(move |path: FullPath, build_path: PathBuf| async move {
 						// Serve static files
 						let p = &path.as_str()[1..];
+						let p = percent_encoding::percent_decode_str(p)
+							.decode_utf8()
+							.expect("Failed to decode URL");
 
 						if p == "static/_dev.js" {
 							let res = Response::new(include_str!("./refresh_websocket.js").into());
 							return Ok(res);
 						}
 
-						let mut p = build_path.join(p);
+						let mut p = build_path.join(p.as_ref());
 
 						if !p.exists() {
 							p = p.with_extension("html");
