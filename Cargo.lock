@@ -2125,7 +2125,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "zyl"
+name = "zyl-site"
 version = "0.1.0"
 dependencies = [
  "anyhow",
