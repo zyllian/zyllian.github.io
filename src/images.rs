@@ -74,6 +74,7 @@ impl ImageMetadata {
 				image: &self,
 				src: self.cdn_url(&builder.site.config)?.to_string(),
 				id: &id,
+				timestamp: self.timestamp,
 			};
 			builder.reg.render("image", &data)?
 		};
@@ -110,6 +111,7 @@ impl ImageMetadata {
 				image: metadata,
 				src: metadata.cdn_url(&builder.site.config)?.to_string(),
 				id,
+				timestamp: metadata.timestamp,
 			});
 		}
 
@@ -272,6 +274,9 @@ struct ImageTemplateData<'i> {
 	src: String,
 	/// The image's ID.
 	id: &'i str,
+	/// The image's timestamp. (Duplicated to change the serialization method.)
+	#[serde(serialize_with = "time::serde::rfc2822::serialize")]
+	timestamp: OffsetDateTime,
 }
 
 /// Template data for image lists.
