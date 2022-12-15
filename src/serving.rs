@@ -106,9 +106,9 @@ fn remove(builder: &mut SiteBuilder, path: &Path, relative_path: &Path) -> anyho
 			.with_context(|| format!("Failed to remove file at {:?}", to_remove))?;
 	} else if let Ok(_sass_path) = relative_path.strip_prefix(SASS_PATH) {
 		builder.build_sass().context("Failed to rebuild Sass")?;
+	} else if let Ok(root_path) = relative_path.strip_prefix(ROOT_PATH) {
+		std::fs::remove_file(builder.build_path.join(root_path))?;
 	}
-
-	// Removing root files is not handled for the time being.
 
 	Ok(())
 }
