@@ -138,11 +138,6 @@ impl<'a> SiteBuilder<'a> {
 								&format!(r#"<script src="/{}/_dev.js"></script>"#, STATIC_PATH),
 								ContentType::Html,
 							);
-						} else {
-							el.append(
-								&format!(r#"<base href="{}">"#, &self.site.config.base_url),
-								ContentType::Html,
-							);
 						}
 
 						Ok(())
