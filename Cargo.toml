@@ -12,16 +12,20 @@ grass = { version = "0.11", default-features = false }
 gray_matter = "0.2"
 handlebars = "4.1"
 hotwatch = { version = "0.4", optional = true }
+itertools = "0.10"
 lol_html = "0.3"
 minifier = { version = "0.2", features = ["html"] }
+percent-encoding = { version = "2", optional = true }
 pulldown-cmark = { version = "0.9", default-features = false, features = ["simd"] }
+rss = { version = "2", features = ["validation"] }
 serde = { version = "1", features = ["derive"] }
 serde_yaml = "0.9"
+time = { version = "0.3", features = ["serde-human-readable"] }
 tokio = { version = "1.10", features = ["macros", "rt-multi-thread"], optional = true }
-url = "2.2"
+url = { version = "2.2", features = ["serde"] }
 walkdir = "2"
 warp = { version = "0.3", optional = true }
 
 [features]
 default = ["serve"]
-serve = ["futures", "hotwatch", "tokio", "warp"]
+serve = ["futures", "hotwatch", "percent-encoding", "tokio", "warp"]

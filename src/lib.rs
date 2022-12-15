@@ -1,4 +1,6 @@
 mod builder;
+mod images;
+mod link_list;
 #[cfg(feature = "serve")]
 pub mod serving;
 mod util;
@@ -10,6 +12,7 @@ use std::{
 
 use anyhow::Context;
 use serde::Deserialize;
+use url::Url;
 use walkdir::WalkDir;
 
 use builder::SiteBuilder;
@@ -24,7 +27,7 @@ const ROOT_PATH: &str = "root";
 #[derive(Debug, Deserialize)]
 pub struct SiteConfig {
 	/// The location the site is at.
-	pub base_url: String,
+	pub base_url: Url,
 	/// The site's title.
 	pub title: String,
 	/// The site's description? Not sure if this will actually be used or not
@@ -33,6 +36,12 @@ pub struct SiteConfig {
 	pub build: Option<String>,
 	/// A list of Sass stylesheets that will be built.
 	pub sass_styles: Vec<PathBuf>,
+	/// The number of images to display on a single page of an image list.
+	pub images_per_page: usize,
+	/// URL to the CDN used for the site's images.
+	pub cdn_url: Url,
+	/// Prefix applied to all files uploaded to the site's S3 space.
+	pub s3_prefix: String,
 }
 
 /// Struct for the front matter in templates. (nothing here yet)
@@ -124,6 +133,7 @@ impl Site {
 
 		builder.site.build_all_pages(&builder)?;
 		builder.build_sass()?;
+		builder.build_images()?;
 
 		Ok(())
 	}

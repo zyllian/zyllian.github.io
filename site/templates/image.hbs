@@ -1,0 +1,15 @@
+<div class="image-full">
+	<h1 class="title">{{title}}</h1>
+	<span class="timestamp">{{timestamp}}</span>
+	<img class="image-actual" src="{{src}}" alt="{{alt}}">
+	{{#if desc}}
+	<p>{{desc}}</p>
+	{{/if}}
+	<p><a href="{{src}}">View full size image</a></p>
+	<h3 class="tags-title">Tags</h3>
+	<div class="image-tags">
+		{{#each tags}}
+		<a class="tag" href="/i/tag/{{this}}/">{{this}}</a>{{#unless @last}},{{/unless}}
+		{{/each}}
+	</div>
+</div>
