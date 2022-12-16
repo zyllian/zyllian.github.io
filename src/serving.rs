@@ -19,8 +19,7 @@ use warp::{
 };
 
 use crate::{
-	images::ImageMetadata, Site, SiteBuilder, PAGES_PATH, ROOT_PATH, SASS_PATH, STATIC_PATH,
-	TEMPLATES_PATH,
+	images::ImageMetadata, Site, SiteBuilder, PAGES_PATH, ROOT_PATH, SASS_PATH, TEMPLATES_PATH,
 };
 
 fn with_build_path(
@@ -68,8 +67,6 @@ fn create(
 			builder.site.build_all_pages(builder)?;
 			builder.build_images()?;
 		}
-	} else if let Ok(_static_path) = relative_path.strip_prefix(STATIC_PATH) {
-		std::fs::copy(path, builder.build_path.join(relative_path))?;
 	} else if relative_path.display().to_string() == "config.yaml" {
 		let new_config = serde_yaml::from_str(&std::fs::read_to_string(path)?)?;
 		builder.site.config = new_config;
@@ -107,10 +104,6 @@ fn remove(builder: &mut SiteBuilder, path: &Path, relative_path: &Path) -> anyho
 			.site
 			.build_all_pages(builder)
 			.context("Failed to rebuild pages")?;
-	} else if let Ok(_static_path) = relative_path.strip_prefix(STATIC_PATH) {
-		let to_remove = builder.build_path.join(relative_path);
-		std::fs::remove_file(&to_remove)
-			.with_context(|| format!("Failed to remove file at {:?}", to_remove))?;
 	} else if let Ok(_sass_path) = relative_path.strip_prefix(SASS_PATH) {
 		builder.build_sass().context("Failed to rebuild Sass")?;
 	} else if let Ok(root_path) = relative_path.strip_prefix(ROOT_PATH) {
@@ -257,7 +250,7 @@ impl Site {
 							.decode_utf8()
 							.expect("Failed to decode URL");
 
-						if p == "static/_dev.js" {
+						if p == "_dev.js" {
 							let res = Response::new(include_str!("./refresh_websocket.js").into());
 							return Ok(res);
 						}

@@ -9,9 +9,11 @@ use lol_html::{element, html_content::ContentType, HtmlRewriter, Settings};
 use pulldown_cmark::{Options, Parser};
 use serde::Serialize;
 use url::Url;
-use walkdir::WalkDir;
 
-use crate::{images::ImageMetadata, util, PageMetadata, Site, ROOT_PATH, SASS_PATH, STATIC_PATH};
+use crate::{images::ImageMetadata, util, PageMetadata, Site, ROOT_PATH, SASS_PATH};
+
+/// URLs which need to have a "me" rel attribute.
+const ME_URLS: &[&str] = &["https://mas.to/@zyl"];
 
 /// Struct containing data to be sent to templates when rendering them.
 #[derive(Debug, Serialize)]
@@ -54,23 +56,18 @@ impl<'a> SiteBuilder<'a> {
 		}
 	}
 
-	/// Prepares the site builder for use.
+	/// Prepares the site builder for use and sets up the build directory.
 	pub fn prepare(mut self) -> anyhow::Result<Self> {
-		let build_static_path = self.build_path.join(STATIC_PATH);
 		if self.build_path.exists() {
-			if build_static_path.exists() {
-				std::fs::remove_dir_all(&build_static_path)
-					.context("Failed to remove old static directory")?;
-			}
-			for entry in WalkDir::new(&self.build_path) {
-				let entry = entry?;
-				let path = entry.path();
-				if let Some(ext) = path.extension() {
-					if ext == "html" {
-						std::fs::remove_file(path).with_context(|| {
-							format!("Failed to remove file at {}", path.display())
-						})?;
-					}
+			for entry in self.build_path.read_dir()? {
+				let path = &entry?.path();
+				if path.is_dir() {
+					std::fs::remove_dir_all(path).with_context(|| {
+						format!("Failed to remove directory at {}", path.display())
+					})?;
+				} else {
+					std::fs::remove_file(path)
+						.with_context(|| format!("Failed to remove file at {}", path.display()))?;
 				}
 			}
 		} else {
@@ -90,16 +87,6 @@ impl<'a> SiteBuilder<'a> {
 				let path = entry.path();
 				std::fs::copy(&path, self.build_path.join(path.strip_prefix(&root_path)?))?;
 			}
-		}
-
-		let static_path = self.site.site_path.join(STATIC_PATH);
-		if static_path.exists() {
-			fs_extra::copy_items(
-				&[static_path],
-				&self.build_path,
-				&fs_extra::dir::CopyOptions::default(),
-			)
-			.context("Failed to copy static directory")?;
 		}
 
 		let images_path = self.build_path.join(crate::images::IMAGES_OUT_PATH);
@@ -126,6 +113,7 @@ impl<'a> SiteBuilder<'a> {
 			_ => self.site.config.title.clone(),
 		};
 
+		// Modify HTML output
 		let mut output = Vec::new();
 		let mut rewriter = HtmlRewriter::new(
 			Settings {
@@ -134,21 +122,19 @@ impl<'a> SiteBuilder<'a> {
 						el.prepend(r#"<meta charset="utf-8">"#, ContentType::Html);
 						el.append(&format!("<title>{}</title>", title), ContentType::Html);
 						if self.serving {
-							el.append(
-								&format!(r#"<script src="/{}/_dev.js"></script>"#, STATIC_PATH),
-								ContentType::Html,
-							);
+							el.append(r#"<script src="/_dev.js"></script>"#, ContentType::Html);
 						}
 
 						Ok(())
 					}),
 					element!("a", |el| {
 						if let Some(href) = el.get_attribute("href") {
-							let me = href == "https://mas.to/@zyl";
-							if let Ok(href) = Url::parse(&href) {
-								if href.host().is_some() {
+							if let Ok(url) = Url::parse(&href) {
+								if url.host().is_some() {
+									// Make external links open in new tabs without referral information
 									let mut rel = String::from("noopener noreferrer");
-									if me {
+									if ME_URLS.contains(&href.as_str()) {
+										// Needed for Mastodon link verification
 										rel.push_str(" me");
 									}
 									el.set_attribute("rel", &rel)?;
@@ -176,13 +162,14 @@ impl<'a> SiteBuilder<'a> {
 		Ok(out)
 	}
 
-	/// Builds a page.
+	/// Builds a standard page.
 	pub fn build_page(&self, page_name: &str) -> anyhow::Result<()> {
 		let page_path = self.site.page_index.get(page_name).expect("Missing page");
 
 		let input = std::fs::read_to_string(page_path)
 			.with_context(|| format!("Failed to read page at {}", page_path.display()))?;
 		let page = self.matter.parse(&input);
+
 		let page_metadata = if let Some(data) = page.data {
 			data.deserialize()?
 		} else {
@@ -200,7 +187,7 @@ impl<'a> SiteBuilder<'a> {
 			.with_context(|| format!("Failed to create directory for page {}", page_name))?;
 		std::fs::write(&out_path, out).with_context(|| {
 			format!(
-				"Failed to create page file at {} for page {}",
+				"Failed to create HTML file at {} for page {}",
 				out_path.display(),
 				page_name
 			)
