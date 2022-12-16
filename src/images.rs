@@ -6,7 +6,7 @@ use std::{
 use anyhow::Context;
 use itertools::Itertools;
 use rss::{validation::Validate, ChannelBuilder, ItemBuilder};
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize, Serializer};
 use time::{format_description::well_known::Rfc2822, OffsetDateTime};
 use url::Url;
 
@@ -275,8 +275,23 @@ struct ImageTemplateData<'i> {
 	/// The image's ID.
 	id: &'i str,
 	/// The image's timestamp. (Duplicated to change the serialization method.)
-	#[serde(serialize_with = "time::serde::rfc2822::serialize")]
+	#[serde(serialize_with = "ImageTemplateData::timestamp_formatter")]
 	timestamp: OffsetDateTime,
+}
+
+impl<'i> ImageTemplateData<'i> {
+	fn timestamp_formatter<S>(timestamp: &OffsetDateTime, serializer: S) -> Result<S::Ok, S::Error>
+	where
+		S: Serializer,
+	{
+		let out = timestamp
+			.format(
+				&time::format_description::parse("[weekday], [month repr:long] [day], [year]")
+					.expect("Should never fail"),
+			)
+			.expect("Should never fail");
+		serializer.serialize_str(&out)
+	}
 }
 
 /// Template data for image lists.
