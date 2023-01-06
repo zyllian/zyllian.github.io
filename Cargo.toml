@@ -21,7 +21,7 @@ rss = { version = "2", features = ["validation"] }
 serde = { version = "1", features = ["derive"] }
 serde_yaml = "0.9"
 time = { version = "0.3", features = ["serde-human-readable"] }
-tokio = { version = "1.10", features = ["macros", "rt-multi-thread"], optional = true }
+tokio = { version = "1.23", features = ["macros", "rt-multi-thread"], optional = true }
 url = { version = "2.2", features = ["serde"] }
 walkdir = "2"
 warp = { version = "0.3", optional = true }
