@@ -4,4 +4,4 @@ description: "Zoey's website."
 sass_styles: [index.scss]
 images_per_page: 10
 cdn_url: "https://i.zyl.gay"
-s3_prefix: z/
+s3_prefix: # no longer prefixed
