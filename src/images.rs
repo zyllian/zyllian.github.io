@@ -10,6 +10,7 @@ use crate::{
 pub(crate) const IMAGES_PATH: &str = "images";
 pub(crate) const IMAGES_OUT_PATH: &str = "i";
 
+/// Builds the site's image pages.
 pub fn build_images(site_builder: &SiteBuilder) -> anyhow::Result<()> {
 	let config = ResourceBuilderConfig {
 		source_path: IMAGES_PATH.to_string(),
