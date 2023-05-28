@@ -18,9 +18,7 @@ use warp::{
 	Filter,
 };
 
-use crate::{
-	images::ImageMetadata, Site, SiteBuilder, PAGES_PATH, ROOT_PATH, SASS_PATH, TEMPLATES_PATH,
-};
+use crate::{Site, SiteBuilder, PAGES_PATH, ROOT_PATH, SASS_PATH, TEMPLATES_PATH};
 
 fn with_build_path(
 	build_path: PathBuf,
@@ -109,8 +107,6 @@ fn remove(builder: &mut SiteBuilder, path: &Path, relative_path: &Path) -> anyho
 	} else if let Ok(root_path) = relative_path.strip_prefix(ROOT_PATH) {
 		std::fs::remove_file(builder.build_path.join(root_path))?;
 	} else if let Ok(_image_path) = relative_path.strip_prefix(crate::images::IMAGES_PATH) {
-		let p = ImageMetadata::build_path(&builder.build_path, &ImageMetadata::get_id(path));
-		std::fs::remove_file(p)?;
 		// HACK: same as in `create`
 		builder.build_images()?;
 	}

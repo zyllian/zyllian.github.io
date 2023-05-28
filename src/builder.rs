@@ -10,7 +10,7 @@ use pulldown_cmark::{Options, Parser};
 use serde::Serialize;
 use url::Url;
 
-use crate::{images::ImageMetadata, util, PageMetadata, Site, ROOT_PATH, SASS_PATH};
+use crate::{util, PageMetadata, Site, ROOT_PATH, SASS_PATH};
 
 /// URLs which need to have a "me" rel attribute.
 const ME_URLS: &[&str] = &["https://mas.to/@zyl"];
@@ -240,11 +240,6 @@ impl<'a> SiteBuilder<'a> {
 
 	/// Builds the site's various image pages.
 	pub fn build_images(&self) -> anyhow::Result<()> {
-		let images = ImageMetadata::load_all(&self.site.site_path)?;
-		ImageMetadata::build_lists(self, &images)?;
-		for (id, image) in images {
-			image.build(self, id)?;
-		}
-		Ok(())
+		crate::images::build_images(self)
 	}
 }

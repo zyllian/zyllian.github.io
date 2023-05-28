@@ -1,6 +1,7 @@
 mod builder;
 mod images;
 mod link_list;
+mod resource;
 #[cfg(feature = "serve")]
 pub mod serving;
 mod util;
