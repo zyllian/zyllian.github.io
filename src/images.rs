@@ -1,5 +1,4 @@
 use serde::{Deserialize, Serialize};
-use url::Url;
 
 use crate::{
 	builder::SiteBuilder,
@@ -28,7 +27,7 @@ pub fn build_images(site_builder: &SiteBuilder) -> anyhow::Result<()> {
 	};
 
 	let mut builder = ResourceBuilder::<ImageMetadata, ImageTemplateData>::new(config);
-	builder.load_all(&site_builder.site.site_path)?;
+	builder.load_all(site_builder)?;
 	builder.build_all(site_builder)?;
 
 	Ok(())
@@ -43,13 +42,6 @@ pub struct ImageMetadata {
 	pub desc: Option<String>,
 	/// The image's file path.
 	pub file: String,
-}
-
-impl ImageMetadata {
-	/// Gets an image's CDN url.
-	pub fn cdn_url(&self, config: &SiteConfig) -> anyhow::Result<Url> {
-		Ok(config.cdn_url.join(&config.s3_prefix)?.join(&self.file)?)
-	}
 }
 
 /// Template data for a specific image.
@@ -70,7 +62,7 @@ impl ResourceMethods<ImageTemplateData> for ResourceMetadata<ImageMetadata> {
 		site_config: &SiteConfig,
 	) -> anyhow::Result<ImageTemplateData> {
 		Ok(ImageTemplateData {
-			src: self.inner.cdn_url(site_config)?.to_string(),
+			src: site_config.cdn_url(&self.inner.file)?.to_string(),
 		})
 	}
 }

@@ -1,0 +1,22 @@
+<div class="blog-post">
+	<h1 class="title">{{title}}</h1>
+	<span class="timestamp">Published {{timestamp}}</span>
+	{{#if draft}}
+	<h2>DRAFT</h2>
+	{{/if}}
+	<div class="header-image-wrapper">
+		<p class="short-desc">{{desc}}</p>
+		<img class="header-image" src="{{header_image}}" alt="{{header_image_alt}}"
+			style="object-fit: {{object_fit}}; object-position: {{object_position}};">
+	</div>
+	<div class="content">
+		{{{content}}}
+	</div>
+	<hr />
+	<h3 class="tags-title">Tags</h3>
+	<div class="post-tags">
+		{{#each tags}}
+		<a class="tag" href="/blog/tag/{{this}}">{{this}}</a>{{#unless @last}},{{/unless}}
+		{{/each}}
+	</div>
+</div>

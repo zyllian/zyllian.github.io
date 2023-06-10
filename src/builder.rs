@@ -25,7 +25,7 @@ struct TemplateData<'a> {
 /// Struct used to build the site.
 pub struct SiteBuilder<'a> {
 	/// The matter instance used to extract front matter.
-	matter: Matter<YAML>,
+	pub(crate) matter: Matter<YAML>,
 	/// The Handlebars registry used to render templates.
 	pub(crate) reg: Handlebars<'a>,
 	/// The site info used to build the site.
@@ -241,5 +241,10 @@ impl<'a> SiteBuilder<'a> {
 	/// Builds the site's various image pages.
 	pub fn build_images(&self) -> anyhow::Result<()> {
 		crate::images::build_images(self)
+	}
+
+	/// Builds the site's blog.
+	pub fn build_blog(&self) -> anyhow::Result<()> {
+		crate::blog::build_blog(self)
 	}
 }

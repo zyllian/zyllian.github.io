@@ -1,3 +1,4 @@
+mod blog;
 mod builder;
 mod images;
 mod link_list;
@@ -38,10 +39,19 @@ pub struct SiteConfig {
 	pub sass_styles: Vec<PathBuf>,
 	/// The number of images to display on a single page of an image list.
 	pub images_per_page: usize,
+	/// The number of blog posts to display on a single page of a post list.
+	pub blog_posts_per_page: usize,
 	/// URL to the CDN used for the site's images.
 	pub cdn_url: Url,
 	/// Prefix applied to all files uploaded to the site's S3 space.
 	pub s3_prefix: String,
+}
+
+impl SiteConfig {
+	/// Gets a CDN url from the given file name.
+	pub fn cdn_url(&self, file: &str) -> anyhow::Result<Url> {
+		Ok(self.cdn_url.join(&self.s3_prefix)?.join(file)?)
+	}
 }
 
 /// Struct for the front matter in templates. (nothing here yet)
@@ -134,6 +144,7 @@ impl Site {
 		builder.site.build_all_pages(&builder)?;
 		builder.build_sass()?;
 		builder.build_images()?;
+		builder.build_blog()?;
 
 		Ok(())
 	}

@@ -9,11 +9,15 @@ body {
   --text-color: black;
   --accent-color: #b520e7;
   --accent-text-color: var(--bg-color);
+  --accent-color-neutral: #aaa;
+  --accent-text-color-neutral: #eee;
 
   @media (prefers-color-scheme: dark) {
     --bg-color: #333;
     --text-color: #ccc;
     --accent-text-color: black;
+    --accent-color-neutral: #555;
+    --accent-text-color-neutral: #bbb;
   }
 }
 
@@ -55,7 +59,7 @@ abbr {
 .images-list {
   display: flex;
   flex-wrap: wrap;
-  
+
   .image {
     position: relative;
     padding: 4px;
@@ -81,7 +85,8 @@ abbr {
 }
 
 .image-full {
-  .title, .tags-title {
+  .title,
+  .tags-title {
     margin-bottom: 0;
   }
 
@@ -90,5 +95,70 @@ abbr {
     max-height: 80vh;
     object-fit: contain;
     background-color: rgba(0, 0, 0, 0.3);
+  }
+}
+
+.blog-post-list {
+  .post {
+    p {
+      margin: 0;
+    }
+
+    .title {
+      font-size: 1.2rem;
+    }
+
+    .short-desc {
+      font-size: 0.9rem;
+      font-style: italic;
+
+      &:before {
+        content: "└ ";
+      }
+    }
+  }
+}
+
+.blog-post {
+  margin-left: auto;
+  margin-right: auto;
+  max-width: max(1000px, 40%);
+
+  .title,
+  .tags-title {
+    margin: 0;
+  }
+
+  .header-image-wrapper {
+    color: var(--accent-text-color-neutral);
+    background-color: var(--accent-color-neutral);
+    font-style: italic;
+    font-size: 1.2rem;
+    margin-bottom: 8px;
+
+    .short-desc {
+      margin: 0;
+      padding: 8px;
+    }
+
+    .header-image {
+      width: 100%;
+      max-height: 60vh;
+      object-fit: cover;
+      object-position: 50% 50%;
+    }
+  }
+
+  .content {
+    text-indent: 1rem;
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+      text-indent: 0;
+    }
   }
 }

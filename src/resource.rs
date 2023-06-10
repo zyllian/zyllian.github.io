@@ -6,6 +6,7 @@ use std::{
 
 use anyhow::Context;
 use itertools::Itertools;
+use pulldown_cmark::{Options, Parser};
 use rss::{validation::Validate, ChannelBuilder, ItemBuilder};
 use serde::{de::DeserializeOwned, Deserialize, Serialize, Serializer};
 use time::{format_description::well_known::Rfc2822, OffsetDateTime};
@@ -25,6 +26,12 @@ pub struct ResourceMetadata<T> {
 	/// Extra resource data not included.
 	#[serde(flatten)]
 	pub inner: T,
+	/// Whether the resource is a draft. Drafts can be committed without being published to the live site.
+	#[serde(default)]
+	pub draft: bool,
+	/// The resource's content. Defaults to nothing until loaded in another step.
+	#[serde(default)]
+	pub content: String,
 }
 
 #[derive(Debug, Serialize)]
@@ -141,19 +148,39 @@ where
 	}
 
 	/// Loads resource metadata from the given path.
-	fn load(path: &Path) -> anyhow::Result<(String, ResourceMetadata<M>)> {
+	fn load(builder: &SiteBuilder, path: &Path) -> anyhow::Result<(String, ResourceMetadata<M>)> {
 		let id = Self::get_id(path);
-		let metadata = serde_yaml::from_str(&std::fs::read_to_string(path)?)?;
-		Ok((id, metadata))
+
+		let input = std::fs::read_to_string(path)?;
+		let mut page = builder
+			.matter
+			.parse_with_struct::<ResourceMetadata<M>>(&input)
+			.ok_or_else(|| anyhow::anyhow!("Failed to parse resource front matter"))?;
+
+		let parser = Parser::new_ext(&page.content, Options::all());
+		let mut html = String::new();
+		pulldown_cmark::html::push_html(&mut html, parser);
+
+		page.data.content = html;
+
+		Ok((id, page.data))
 	}
 
 	/// Loads all resource metadata from the given config.
-	pub fn load_all(&mut self, site_path: &Path) -> anyhow::Result<()> {
+	pub fn load_all(&mut self, builder: &SiteBuilder) -> anyhow::Result<()> {
 		self.loaded_metadata.clear();
-		for e in site_path.join(&self.config.source_path).read_dir()? {
+		for e in builder
+			.site
+			.site_path
+			.join(&self.config.source_path)
+			.read_dir()?
+		{
 			let p = e?.path();
-			if let Some("yml") = p.extension().and_then(|e| e.to_str()) {
-				let (id, metadata) = Self::load(&p)?;
+			if let Some("md") = p.extension().and_then(|e| e.to_str()) {
+				let (id, metadata) = Self::load(builder, &p)?;
+				if cfg!(not(debug_assertions)) && metadata.draft {
+					continue;
+				}
 				self.loaded_metadata.push((id, metadata));
 			}
 		}
@@ -201,6 +228,16 @@ where
 	}
 
 	pub fn build_all(&self, builder: &SiteBuilder) -> anyhow::Result<()> {
+		let out_short = builder.build_path.join(&self.config.output_path_short);
+		let out_long = builder.build_path.join(&self.config.output_path_long);
+
+		if !out_short.exists() {
+			std::fs::create_dir_all(&out_short)?;
+		}
+		if !out_long.exists() {
+			std::fs::create_dir_all(&out_long)?;
+		}
+
 		for (id, resource) in &self.loaded_metadata {
 			self.build(builder, id.clone(), resource)?;
 		}
@@ -267,8 +304,6 @@ where
 			Ok(())
 		}
 
-		let out_path = builder.build_path.join(&self.config.output_path_short);
-
 		// Build main list of resources
 		build_list(
 			builder,
@@ -276,7 +311,7 @@ where
 			data.iter().collect(),
 			&self.config.list_title,
 			None,
-			&builder.build_path.join(&self.config.output_path_long),
+			&out_long,
 			self.config.resources_per_page,
 		)?;
 
@@ -310,7 +345,7 @@ where
 				links,
 				&self.config.tag_list_title,
 			)?;
-			std::fs::write(out_path.join("tags.html"), out)?;
+			std::fs::write(out_short.join("tags.html"), out)?;
 		}
 
 		for (tag, data) in tags {
@@ -320,7 +355,7 @@ where
 				data,
 				&format!("{} tagged {tag}", self.config.resource_name_plural),
 				Some(tag.as_str()),
-				&out_path.join("tag").join(&tag),
+				&out_short.join("tag").join(&tag),
 				self.config.resources_per_page,
 			)?;
 		}
@@ -367,13 +402,7 @@ where
 			.build();
 		channel.validate().context("Failed to validate RSS feed")?;
 		let out = channel.to_string();
-		std::fs::write(
-			builder
-				.build_path
-				.join(&self.config.output_path_long)
-				.join("rss.xml"),
-			out,
-		)?;
+		std::fs::write(out_long.join("rss.xml"), out)?;
 
 		Ok(())
 	}

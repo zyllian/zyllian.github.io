@@ -64,6 +64,7 @@ fn create(
 		if build {
 			builder.site.build_all_pages(builder)?;
 			builder.build_images()?;
+			builder.build_blog()?;
 		}
 	} else if relative_path.display().to_string() == "config.yaml" {
 		let new_config = serde_yaml::from_str(&std::fs::read_to_string(path)?)?;
@@ -78,6 +79,9 @@ fn create(
 	} else if let Ok(_image_path) = relative_path.strip_prefix(crate::images::IMAGES_PATH) {
 		// HACK: this could get very inefficient with a larger number of images. should definitely optimize
 		builder.build_images()?;
+	} else if let Ok(_blog_path) = relative_path.strip_prefix(crate::blog::BLOG_PATH) {
+		// HACK: same as above
+		builder.build_blog()?;
 	}
 
 	Ok(())
@@ -109,6 +113,8 @@ fn remove(builder: &mut SiteBuilder, path: &Path, relative_path: &Path) -> anyho
 	} else if let Ok(_image_path) = relative_path.strip_prefix(crate::images::IMAGES_PATH) {
 		// HACK: same as in `create`
 		builder.build_images()?;
+	} else if let Ok(_blog_path) = relative_path.strip_prefix(crate::blog::BLOG_PATH) {
+		// HACK: same as above
 	}
 
 	Ok(())
@@ -138,6 +144,7 @@ impl Site {
 		builder
 			.build_images()
 			.context("Failed to build image pages")?;
+		builder.build_blog().context("Failed to build blog")?;
 
 		// Map of websocket connections
 		let peers: Arc<Mutex<HashMap<SocketAddr, WebSocket>>> =
