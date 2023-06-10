@@ -30,7 +30,7 @@ jobs:
       # Runs a single command using the runners shell
       - name: Build site
         run: |
-          cargo run --no-default-features
+          cargo run --no-default-features --release
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
