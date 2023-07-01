@@ -8,4 +8,8 @@ There's not much here, so here are some other places I'm at sometimes:
 - [YouTube](https://youtube.com/@zyllian) (Mostly short video game clips and my cat)
 - [Mastodon](https://mas.to/@zyl)
 - [Twitter](https://twitter.com/Zylllian)
+
+I also have accounts over at these places but haven't posted much:
+
 - [cohost](https://cohost.org/zyl)
+- [tumblr](https://www.tumblr.com/zyllian)
