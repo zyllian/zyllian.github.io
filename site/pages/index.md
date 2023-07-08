@@ -1,13 +1,13 @@
-# not Zoey's Website
+# not zoey's Website
 
-Welcome! I'm (not) Zoey, a trans woman located in the Pacific Northwest.
+Welcome! I'm (not) zoey, a trans woman\* located in the Pacific Northwest.
 
 There's not much here, so here are some other places I'm at sometimes:
 
-- [GitHub](https://github.com/Zyllian)
+- [GitHub](https://github.com/zyllian)
 - [YouTube](https://youtube.com/@zyllian) (Mostly short video game clips and my cat)
 - [Mastodon](https://mas.to/@zyl)
-- [Twitter](https://twitter.com/Zylllian)
+- [Twitter](https://twitter.com/zylllian)
 
 I also have accounts over at these places but haven't posted much:
 
