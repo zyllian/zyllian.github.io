@@ -1,4 +1,4 @@
-# not zoey's Website
+# not zoey's website
 
 Welcome! I'm (not) zoey, a trans woman\* located in the Pacific Northwest.
 
