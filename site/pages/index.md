@@ -14,4 +14,4 @@ I also have accounts over at these places but haven't posted much:
 - [cohost](https://cohost.org/zyl)
 - [tumblr](https://www.tumblr.com/zyllian)
 
-\* my gender's absolutely fucked. woman is an approximation
+\*my gender's absolutely fucked. woman is an approximation
