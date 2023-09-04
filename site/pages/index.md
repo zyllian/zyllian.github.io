@@ -11,6 +11,6 @@ There's not much here, so here are some other places I'm at sometimes:
 I also have accounts over at these places but haven't posted much:
 
 - [cohost](https://cohost.org/zyl)
-- [tumblr](https://www.tumblr.com/zyllian)
+- [tumblr (nsfw)](https://www.tumblr.com/zyllian)
 
 \*my gender's absolutely fucked. woman is an approximation
