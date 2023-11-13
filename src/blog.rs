@@ -98,10 +98,12 @@ impl ResourceMethods<BlogPostTemplateData> for ResourceMetadata<BlogPostMetadata
 		<meta name="twitter:card" content="summary_large_image">
 		<meta name="twitter:title" content="{}">
 		<meta name="twitter:image" content="{}">
+		<meta name="og:description" content={}">
 		"#,
 			site_config.title,
 			self.title,
 			self.inner.get_header_image(site_config)?,
+			self.inner.desc,
 		))
 	}
 }
