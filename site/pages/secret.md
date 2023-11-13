@@ -1,7 +1,7 @@
 ---
-title: Secret!
+title: secret!!
 ---
 
-# You found the secret page! 🎉🎉
+# you found the secret page! 🎉🎉
 
 that's it.

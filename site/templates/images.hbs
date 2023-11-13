@@ -1,17 +1,17 @@
 {{#if tag}}
-<h1>Images tagged {{tag}}</h1>
+<h1>images tagged {{tag}}</h1>
 <p><a href="/images/">View all images</a></p>
 {{else}}
-<h1>Images</h1>
+<h1>images</h1>
 <p><a href="/i/tags">View image tags</a></p>
 <p><a href="rss.xml">RSS Feed</a></p>
 {{/if}}
 <h3>Page {{page}}/{{page_max}}</h3>
 {{#if previous}}
-<a href="./{{previous}}">Previous page</a>
+<a href="./{{previous}}">previous page</a>
 {{/if}}
 {{#if next}}
-<a href="./{{next}}">Next page</a>
+<a href="./{{next}}">next page</a>
 {{/if}}
 <div class="images-list">
 	{{#each resources}}

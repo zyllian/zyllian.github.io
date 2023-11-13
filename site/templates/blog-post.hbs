@@ -1,6 +1,6 @@
 <div class="blog-post">
 	<h1 class="title">{{title}}</h1>
-	<span class="timestamp">Published {{timestamp}}</span>
+	<span class="timestamp">published {{timestamp}}</span>
 	{{#if draft}}
 	<h2>DRAFT</h2>
 	{{/if}}
@@ -13,7 +13,7 @@
 		{{{content}}}
 	</div>
 	<hr />
-	<h3 class="tags-title">Tags</h3>
+	<h3 class="tags-title">tags</h3>
 	<div class="post-tags">
 		{{#each tags}}
 		<a class="tag" href="/blog/tag/{{this}}">{{this}}</a>{{#unless @last}},{{/unless}}

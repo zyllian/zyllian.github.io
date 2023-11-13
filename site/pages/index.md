@@ -1,16 +1,14 @@
-# not zoey's website
+# zyl's website
 
-Welcome! I'm (not) zoey, a trans woman\* located in the Pacific Northwest.
+hi! i'm zyl, a trans doggirlthing <abbr title="therian">ΘΔ</abbr> in the pnw.
 
-There's not much here, so here are some other places I'm at sometimes:
+if you want to see where else i'm at here're some links:
 
 - [GitHub](https://github.com/zyllian)
-- [YouTube](https://youtube.com/@zyllian) (Mostly short video game clips and my cat)
+- [YouTube](https://youtube.com/@zyllian) (mostly short video game clips and my cat)
 - [Mastodon](https://mas.to/@zyl)
 
-I also have accounts over at these places but haven't posted much:
+i also have accounts over at these places if you're an adult:
 
 - [cohost](https://cohost.org/zyl)
-- [tumblr (nsfw)](https://www.tumblr.com/zyllian)
-
-\*my gender's absolutely fucked. woman is an approximation
+- [tumblr](https://www.tumblr.com/zyllian)

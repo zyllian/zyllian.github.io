@@ -1,17 +1,17 @@
 {{#if tag}}
-<h1>Blog posts tagged {{tag}}</h1>
+<h1>blog posts tagged {{tag}}</h1>
 <p><a href="/blog/">View all blog posts</a></p>
 {{else}}
-<h1>Blog Posts</h1>
-<p><a href="tags">View blog tags</a></p>
-<p><a href="rss.xml">RSS Feed</a></p>
+<h1>blog Posts</h1>
+<p><a href="tags">view blog tags</a></p>
+<p><a href="rss.xml">rss feed</a></p>
 {{/if}}
 <h1>Page {{page}}/{{page_max}}</h1>
 {{#if previous}}
-<a href="./{{previous}}">Previous page</a>
+<a href="./{{previous}}">previous page</a>
 {{/if}}
 {{#if next}}
-<a href="./{{next}}">Next page</a>
+<a href="./{{next}}">next page</a>
 {{/if}}
 <div class="blog-post-list">
 	{{#each resources}}
