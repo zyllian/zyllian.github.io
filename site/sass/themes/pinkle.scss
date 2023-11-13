@@ -1,0 +1,16 @@
+body {
+  --bg-color: rgb(255, 196, 252);
+  --text-color: black;
+  --accent-color: rgb(197, 48, 197);
+  --accent-text-color: white;
+  --accent-color-neutral: var(--accent-color);
+  --accent-text-color-neutral: var(--accent-text-color);
+
+  @media (prefers-color-scheme: dark) {
+    --bg-color: #333;
+    --text-color: #ccc;
+    --accent-text-color: black;
+    --accent-color-neutral: #555;
+    --accent-text-color-neutral: #bbb;
+  }
+}

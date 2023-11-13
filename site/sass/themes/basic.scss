@@ -1,0 +1,16 @@
+body {
+  --bg-color: #eee;
+  --text-color: black;
+  --accent-color: #b520e7;
+  --accent-text-color: var(--bg-color);
+  --accent-color-neutral: #aaa;
+  --accent-text-color-neutral: #eee;
+
+  @media (prefers-color-scheme: dark) {
+    --bg-color: #333;
+    --text-color: #ccc;
+    --accent-text-color: black;
+    --accent-color-neutral: #555;
+    --accent-text-color-neutral: #bbb;
+  }
+}
