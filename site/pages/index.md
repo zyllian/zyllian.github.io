@@ -6,5 +6,5 @@ if you want to see mostly stuff of my cat and some short game clips (most are un
 
 if you're an adult i have a couple socials floating around:
 
-- [cohost](https://cohost.org/zyl)
-- [tumblr](https://www.tumblr.com/zyllian)
+- [cohost](me$https://cohost.org/zyl)
+- [tumblr](me$https://www.tumblr.com/zyllian)

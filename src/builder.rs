@@ -12,9 +12,6 @@ use url::Url;
 
 use crate::{util, PageMetadata, Site, ROOT_PATH, SASS_PATH};
 
-/// URLs which need to have a "me" rel attribute.
-const ME_URLS: &[&str] = &["https://mas.to/@zyl"];
-
 /// Struct containing data to be sent to templates when rendering them.
 #[derive(Debug, Serialize)]
 struct TemplateData<'a, T> {
@@ -146,16 +143,30 @@ impl<'a> SiteBuilder<'a> {
 						Ok(())
 					}),
 					element!("a", |el| {
-						if let Some(href) = el.get_attribute("href") {
+						if let Some(mut href) = el.get_attribute("href") {
+							if let Some((command, new_href)) = href.split_once('$') {
+								#[allow(clippy::single_match)]
+								match command {
+									"me" => {
+										el.set_attribute(
+											"rel",
+											&(el.get_attribute("rel").unwrap_or_default() + " me"),
+										)?;
+									}
+									_ => {}
+								}
+								href = new_href.to_string();
+								el.set_attribute("href", &href)?;
+							}
 							if let Ok(url) = Url::parse(&href) {
 								if url.host().is_some() {
 									// Make external links open in new tabs without referral information
-									let mut rel = String::from("noopener noreferrer");
-									if ME_URLS.contains(&href.as_str()) {
-										// Needed for Mastodon link verification
-										rel.push_str(" me");
-									}
-									el.set_attribute("rel", &rel)?;
+									el.set_attribute(
+										"rel",
+										(el.get_attribute("rel").unwrap_or_default()
+											+ " noopener noreferrer")
+											.trim(),
+									)?;
 									el.set_attribute("target", "_blank")?;
 								}
 							}
