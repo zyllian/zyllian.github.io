@@ -98,7 +98,7 @@ impl ResourceMethods<BlogPostTemplateData> for ResourceMetadata<BlogPostMetadata
 		<meta name="twitter:card" content="summary_large_image">
 		<meta name="twitter:title" content="{}">
 		<meta name="twitter:image" content="{}">
-		<meta name="og:description" content={}">
+		<meta name="og:description" content="{}">
 		"#,
 			site_config.title,
 			self.title,
