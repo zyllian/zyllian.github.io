@@ -27,3 +27,4 @@ I thought it might be useful to write out my experiences with the four methods o
   - cannot feel it wearing off between doses
   - levels are actually good??
   - insurance sucks pt. 2
+  - insurance sucks pt. 3
