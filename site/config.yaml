@@ -1,6 +1,6 @@
 base_url: "https://zyl.gay"
-title: zyllian
-description: "zyllian's website."
+title: zyl's website
+description: "zyl's website."
 sass_styles: [index.scss]
 images_per_page: 10
 blog_posts_per_page: 20
