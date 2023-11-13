@@ -9,7 +9,7 @@ use std::{
 
 use anyhow::Context;
 use futures::SinkExt;
-use hotwatch::{Event, Hotwatch};
+use hotwatch::{EventKind, Hotwatch};
 use warp::{
 	hyper::StatusCode,
 	path::FullPath,
@@ -157,50 +157,64 @@ impl Site {
 			.watch(site.site_path.clone(), move |event| {
 				let peers = hw_peers.clone();
 
-				match (|| match event {
-					Event::Write(path) => {
-						if skip_path(&builder, &path) {
-							Ok(false)
-						} else {
-							let rel = rel(&path, &builder.site.site_path)?;
-							println!("CHANGED - {:?}", rel);
-							create(&mut builder, &path, &rel, true)?;
-							Ok::<_, anyhow::Error>(true)
+				match (|| {
+					let path = event
+						.paths
+						.first()
+						.expect("Should always be at least one path");
+					match event.kind {
+						EventKind::Modify(_) => {
+							if skip_path(&builder, path) {
+								Ok(false)
+							} else {
+								let relp = rel(path, &builder.site.site_path)?;
+								if event.paths.len() > 1 {
+									let new = event.paths.last().expect("Can never fail");
+									let new_rel = rel(new, &builder.site.site_path)?;
+									println!("RENAMED - {:?} -> {:?}", relp, new_rel);
+									create(&mut builder, new, &new_rel, false)?;
+									remove(&mut builder, path, &relp)?;
+								} else {
+									println!("CHANGED - {:?}", relp);
+									create(&mut builder, path, &relp, true)?;
+								}
+								Ok::<_, anyhow::Error>(true)
+							}
 						}
-					}
-					Event::Create(path) => {
-						if skip_path(&builder, &path) {
-							Ok(false)
-						} else {
-							let rel = rel(&path, &builder.site.site_path)?;
-							println!("CREATED - {:?}", rel);
-							create(&mut builder, &path, &rel, true)?;
-							Ok(true)
+						EventKind::Create(_) => {
+							if skip_path(&builder, path) {
+								Ok(false)
+							} else {
+								let rel = rel(path, &builder.site.site_path)?;
+								println!("CREATED - {:?}", rel);
+								create(&mut builder, path, &rel, true)?;
+								Ok(true)
+							}
 						}
-					}
-					Event::Remove(path) => {
-						if skip_path(&builder, &path) {
-							Ok(false)
-						} else {
-							let rel = rel(&path, &builder.site.site_path)?;
-							println!("REMOVED - {:?}", rel);
-							remove(&mut builder, &path, &rel)?;
-							Ok(true)
+						EventKind::Remove(_) => {
+							if skip_path(&builder, path) {
+								Ok(false)
+							} else {
+								let rel = rel(path, &builder.site.site_path)?;
+								println!("REMOVED - {:?}", rel);
+								remove(&mut builder, path, &rel)?;
+								Ok(true)
+							}
 						}
+						// EventKind::(old, new) => {
+						// 	if skip_path(&builder, &old) && skip_path(&builder, &new) {
+						// 		Ok(false)
+						// 	} else {
+						// 		let old_rel = rel(&old, &builder.site.site_path)?;
+						// 		let new_rel = rel(&new, &builder.site.site_path)?;
+						// 		println!("RENAMED - {:?} -> {:?}", old_rel, new_rel);
+						// 		create(&mut builder, &new, &new_rel, false)?;
+						// 		remove(&mut builder, &old, &old_rel)?;
+						// 		Ok(true)
+						// 	}
+						// }
+						_ => Ok(false),
 					}
-					Event::Rename(old, new) => {
-						if skip_path(&builder, &old) && skip_path(&builder, &new) {
-							Ok(false)
-						} else {
-							let old_rel = rel(&old, &builder.site.site_path)?;
-							let new_rel = rel(&new, &builder.site.site_path)?;
-							println!("RENAMED - {:?} -> {:?}", old_rel, new_rel);
-							create(&mut builder, &new, &new_rel, false)?;
-							remove(&mut builder, &old, &old_rel)?;
-							Ok(true)
-						}
-					}
-					_ => Ok(false),
 				})() {
 					Ok(reload) => {
 						if reload {
