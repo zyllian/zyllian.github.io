@@ -2,13 +2,9 @@
 
 hi! i'm zyl, a trans doggirlthing <abbr title="therian">ΘΔ</abbr> in the pnw.
 
-if you want to see where else i'm at here're some links:
+if you want to see mostly stuff of my cat and some short game clips (most are unlisted in a public playlist) [i have a youtube over here](https://youtube.com/@zyllian)
 
-- [GitHub](https://github.com/zyllian)
-- [YouTube](https://youtube.com/@zyllian) (mostly short video game clips and my cat)
-- [Mastodon](https://mas.to/@zyl)
-
-i also have accounts over at these places if you're an adult:
+if you're an adult i have a couple socials floating around:
 
 - [cohost](https://cohost.org/zyl)
 - [tumblr](https://www.tumblr.com/zyllian)
