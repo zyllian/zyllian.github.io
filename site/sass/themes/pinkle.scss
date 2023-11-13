@@ -2,15 +2,18 @@ body {
   --bg-color: rgb(255, 196, 252);
   --text-color: black;
   --accent-color: rgb(197, 48, 197);
+  --link-color: var(--accent-color);
   --accent-text-color: white;
   --accent-color-neutral: var(--accent-color);
   --accent-text-color-neutral: var(--accent-text-color);
 
   @media (prefers-color-scheme: dark) {
-    --bg-color: #333;
-    --text-color: #ccc;
-    --accent-text-color: black;
-    --accent-color-neutral: #555;
+    --bg-color: rgb(104, 25, 104);
+    --text-color: white;
+    --accent-color: var(--accent-color-neutral);
+    --link-color: rgb(255, 196, 252);
+    --accent-text-color: white;
+    --accent-color-neutral: rgb(74, 17, 74);
     --accent-text-color-neutral: #bbb;
   }
 }
