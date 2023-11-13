@@ -72,6 +72,10 @@ where
 	fn get_short_desc(&self) -> String;
 
 	fn get_extra_resource_template_data(&self, site_config: &SiteConfig) -> anyhow::Result<E>;
+
+	fn get_head_data(&self, _site_config: &SiteConfig) -> anyhow::Result<String> {
+		Ok(String::new())
+	}
 }
 
 #[derive(Debug, Serialize)]
@@ -82,6 +86,11 @@ struct ResourceListTemplateData<'r, M, E> {
 	page_max: usize,
 	previous: Option<usize>,
 	next: Option<usize>,
+}
+
+#[derive(Debug, Serialize)]
+struct ExtraResourceRenderData {
+	head: String,
 }
 
 /// Config for the resource builder.
@@ -215,12 +224,15 @@ where
 			builder.reg.render(&self.config.resource_template, &data)?
 		};
 
-		let out = builder.build_page_raw(
+		let out = builder.build_page_raw_extra(
 			PageMetadata {
 				title: Some(resource.title.clone()),
 				..Default::default()
 			},
 			&out,
+			ExtraResourceRenderData {
+				head: resource.get_head_data(&builder.site.config)?,
+			},
 		)?;
 		std::fs::write(out_path, out)?;
 

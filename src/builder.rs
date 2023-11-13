@@ -17,9 +17,12 @@ const ME_URLS: &[&str] = &["https://mas.to/@zyl"];
 
 /// Struct containing data to be sent to templates when rendering them.
 #[derive(Debug, Serialize)]
-struct TemplateData<'a> {
+struct TemplateData<'a, T> {
 	/// The rendered page.
 	pub page: &'a str,
+	/// Custom template data.
+	#[serde(flatten)]
+	pub extra: T,
 }
 
 /// Struct used to build the site.
@@ -97,15 +100,30 @@ impl<'a> SiteBuilder<'a> {
 		Ok(self)
 	}
 
-	/// Helper to build a page without writing it to disk.
 	pub fn build_page_raw(
 		&self,
 		page_metadata: PageMetadata,
 		page_html: &str,
 	) -> anyhow::Result<String> {
+		self.build_page_raw_extra(page_metadata, page_html, ())
+	}
+
+	/// Helper to build a page without writing it to disk.
+	pub fn build_page_raw_extra<T>(
+		&self,
+		page_metadata: PageMetadata,
+		page_html: &str,
+		extra: T,
+	) -> anyhow::Result<String>
+	where
+		T: Serialize,
+	{
 		let out = self.reg.render(
 			&page_metadata.template.unwrap_or_else(|| "base".to_string()),
-			&TemplateData { page: page_html },
+			&TemplateData {
+				page: page_html,
+				extra,
+			},
 		)?;
 
 		let title = match &page_metadata.title {

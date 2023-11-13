@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
 	builder::SiteBuilder,
 	resource::{ResourceBuilder, ResourceBuilderConfig, ResourceMetadata, ResourceMethods},
+	SiteConfig,
 };
 
 pub const BLOG_PATH: &str = "blog";
@@ -46,6 +47,13 @@ pub struct BlogPostMetadata {
 	pub image_center: Option<String>,
 }
 
+impl BlogPostMetadata {
+	/// Helper to get the CDN URL to the blog post's header image.
+	fn get_header_image(&self, site_config: &SiteConfig) -> anyhow::Result<String> {
+		Ok(site_config.cdn_url(&self.header_image_file)?.to_string())
+	}
+}
+
 /// Template data for a blog post.
 #[derive(Debug, Serialize)]
 pub struct BlogPostTemplateData {
@@ -64,13 +72,11 @@ impl ResourceMethods<BlogPostTemplateData> for ResourceMetadata<BlogPostMetadata
 
 	fn get_extra_resource_template_data(
 		&self,
-		site_config: &crate::SiteConfig,
+		site_config: &SiteConfig,
 	) -> anyhow::Result<BlogPostTemplateData> {
 		// TODO: render markdown
 		Ok(BlogPostTemplateData {
-			header_image: site_config
-				.cdn_url(&self.inner.header_image_file)?
-				.to_string(),
+			header_image: self.inner.get_header_image(site_config)?,
 			object_fit: self
 				.inner
 				.image_fit
@@ -82,5 +88,20 @@ impl ResourceMethods<BlogPostTemplateData> for ResourceMetadata<BlogPostMetadata
 				.clone()
 				.unwrap_or_else(|| "50% 50%".to_string()),
 		})
+	}
+
+	fn get_head_data(&self, site_config: &SiteConfig) -> anyhow::Result<String> {
+		// TODO: update this so we're not just doing raw html injection lmao
+		Ok(format!(
+			r#"
+		<meta property="og:site_name" content="{}">
+		<meta name="twitter:card" content="summary_large_image">
+		<meta name="twitter:title" content="{}">
+		<meta name="twitter:image" content="{}">
+		"#,
+			site_config.title,
+			self.title,
+			self.inner.get_header_image(site_config)?,
+		))
 	}
 }
