@@ -1,3 +1,7 @@
+---
+extra: index
+---
+
 # zyl's website
 
 hi! i'm zyl, a trans doggirlthing <abbr title="therian">ΘΔ</abbr> in the pnw.

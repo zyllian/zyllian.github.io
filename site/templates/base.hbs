@@ -2,8 +2,10 @@
 <html lang="en">
 
 <head>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<meta name="referrer" content="no-referrer">
 	<link rel="stylesheet" href="/styles/index.css">
+	<title>{{title}}</title>
 	{{{head}}}
 </head>
 
@@ -18,9 +20,11 @@
 		<a href="/images/">images</a> |
 		<a href="https://github.com/zyllian/zyllian.github.io" rel="noopener noreferrer">source</a>
 	</header>
-	<main class="page">
-		{{{page}}}
-	</main>
+	<div id="content">
+		<main class="page">
+			{{{page}}}
+		</main>
+	</div>
 </body>
 
 </html>

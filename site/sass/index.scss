@@ -35,8 +35,14 @@ a {
   }
 }
 
-main.page {
-  margin: 8px;
+#content {
+  main.page {
+    margin: 0 8px 8px 8px;
+  }
+
+  .index-info {
+    margin: 8px;
+  }
 }
 
 abbr {

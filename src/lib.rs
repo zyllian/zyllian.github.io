@@ -1,5 +1,6 @@
 mod blog;
 mod builder;
+mod extras;
 mod images;
 mod link_list;
 mod resource;
@@ -65,6 +66,8 @@ pub struct PageMetadata {
 	pub title: Option<String>,
 	/// The template to use for the page. If not specified, it defaults to "base".
 	pub template: Option<String>,
+	/// The extra stuff to run for the page, if any.
+	pub extra: Option<String>,
 }
 
 /// Struct containing information about the site.

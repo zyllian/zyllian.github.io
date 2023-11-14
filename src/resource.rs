@@ -1,4 +1,5 @@
 use std::{
+	cell::RefCell,
 	collections::BTreeMap,
 	marker::PhantomData,
 	path::{Path, PathBuf},
@@ -12,6 +13,10 @@ use serde::{de::DeserializeOwned, Deserialize, Serialize, Serializer};
 use time::{format_description::well_known::Rfc2822, OffsetDateTime};
 
 use crate::{builder::SiteBuilder, link_list::Link, PageMetadata, SiteConfig};
+
+pub trait ResourceConfig<R> {
+	fn new(builder: &SiteBuilder) -> Self;
+}
 
 /// Metadata for resources.
 #[derive(Debug, Deserialize, Serialize)]
@@ -126,9 +131,9 @@ pub struct ResourceBuilderConfig {
 #[derive(Debug)]
 pub struct ResourceBuilder<M, E> {
 	/// The builder's config.
-	config: ResourceBuilderConfig,
+	pub config: ResourceBuilderConfig,
 	/// The currently loaded resource metadata.
-	loaded_metadata: Vec<(String, ResourceMetadata<M>)>,
+	pub loaded_metadata: RefCell<Vec<(String, ResourceMetadata<M>)>>,
 	_extra: PhantomData<E>,
 }
 
@@ -176,8 +181,9 @@ where
 	}
 
 	/// Loads all resource metadata from the given config.
-	pub fn load_all(&mut self, builder: &SiteBuilder) -> anyhow::Result<()> {
-		self.loaded_metadata.clear();
+	pub fn load_all(&self, builder: &SiteBuilder) -> anyhow::Result<()> {
+		let mut lmd = self.loaded_metadata.borrow_mut();
+		lmd.clear();
 		for e in builder
 			.site
 			.site_path
@@ -190,11 +196,10 @@ where
 				if cfg!(not(debug_assertions)) && metadata.draft {
 					continue;
 				}
-				self.loaded_metadata.push((id, metadata));
+				lmd.push((id, metadata));
 			}
 		}
-		self.loaded_metadata
-			.sort_by(|a, b| b.1.timestamp.cmp(&a.1.timestamp));
+		lmd.sort_by(|a, b| b.1.timestamp.cmp(&a.1.timestamp));
 		Ok(())
 	}
 
@@ -224,7 +229,7 @@ where
 			builder.reg.render(&self.config.resource_template, &data)?
 		};
 
-		let out = builder.build_page_raw_extra(
+		let out = builder.build_page_raw_with_extra_data(
 			PageMetadata {
 				title: Some(resource.title.clone()),
 				..Default::default()
@@ -250,12 +255,14 @@ where
 			std::fs::create_dir_all(&out_long)?;
 		}
 
-		for (id, resource) in &self.loaded_metadata {
+		let lmd = self.loaded_metadata.borrow();
+
+		for (id, resource) in lmd.iter() {
 			self.build(builder, id.clone(), resource)?;
 		}
 
-		let mut data = Vec::with_capacity(self.loaded_metadata.len());
-		for (id, resource) in &self.loaded_metadata {
+		let mut data = Vec::with_capacity(lmd.len());
+		for (id, resource) in lmd.iter() {
 			let extra = resource.get_extra_resource_template_data(&builder.site.config)?;
 			data.push(ResourceTemplateData {
 				resource,

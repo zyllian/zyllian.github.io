@@ -1,17 +1,16 @@
 use serde::{Deserialize, Serialize};
 
 use crate::{
-	builder::SiteBuilder,
-	resource::{ResourceBuilder, ResourceBuilderConfig, ResourceMetadata, ResourceMethods},
-	SiteConfig,
+	resource::{ResourceBuilderConfig, ResourceMetadata, ResourceMethods},
+	Site, SiteConfig,
 };
 
 pub(crate) const IMAGES_PATH: &str = "images";
 pub(crate) const IMAGES_OUT_PATH: &str = "i";
 
-/// Builds the site's image pages.
-pub fn build_images(site_builder: &SiteBuilder) -> anyhow::Result<()> {
-	let config = ResourceBuilderConfig {
+/// Gets the resource configuration for images.
+pub fn get_images_resource_config(site: &Site) -> ResourceBuilderConfig {
+	ResourceBuilderConfig {
 		source_path: IMAGES_PATH.to_string(),
 		output_path_short: IMAGES_OUT_PATH.to_string(),
 		output_path_long: "images".to_string(),
@@ -19,18 +18,12 @@ pub fn build_images(site_builder: &SiteBuilder) -> anyhow::Result<()> {
 		resource_list_template: "images".to_string(),
 		rss_template: "rss/image".to_string(),
 		rss_title: "zyl's images".to_string(),
-		rss_description: "Feed of newly uploaded images from zyl's website.".to_string(),
-		list_title: "Images".to_string(),
-		tag_list_title: "Image Tags".to_string(),
-		resource_name_plural: "Images".to_string(),
-		resources_per_page: site_builder.site.config.images_per_page,
-	};
-
-	let mut builder = ResourceBuilder::<ImageMetadata, ImageTemplateData>::new(config);
-	builder.load_all(site_builder)?;
-	builder.build_all(site_builder)?;
-
-	Ok(())
+		rss_description: "feed of newly uploaded images from zyl's website.".to_string(),
+		list_title: "images".to_string(),
+		tag_list_title: "image tags".to_string(),
+		resource_name_plural: "images".to_string(),
+		resources_per_page: site.config.images_per_page,
+	}
 }
 
 /// Definition for a remote image.
@@ -46,7 +39,7 @@ pub struct ImageMetadata {
 
 /// Template data for a specific image.
 #[derive(Debug, Serialize)]
-struct ImageTemplateData {
+pub struct ImageTemplateData {
 	/// Direct URL to the image's CDN location.
 	/// TODO: link to smaller versions on list pages
 	src: String,

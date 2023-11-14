@@ -10,16 +10,20 @@ use pulldown_cmark::{Options, Parser};
 use serde::Serialize;
 use url::Url;
 
-use crate::{util, PageMetadata, Site, ROOT_PATH, SASS_PATH};
+use crate::{
+	extras::Extra, resource::ResourceBuilder, util, PageMetadata, Site, ROOT_PATH, SASS_PATH,
+};
 
 /// Struct containing data to be sent to templates when rendering them.
 #[derive(Debug, Serialize)]
 struct TemplateData<'a, T> {
 	/// The rendered page.
 	pub page: &'a str,
+	/// The page's title.
+	pub title: &'a str,
 	/// Custom template data.
 	#[serde(flatten)]
-	pub extra: T,
+	pub extra_data: T,
 }
 
 /// Struct used to build the site.
@@ -34,6 +38,13 @@ pub struct SiteBuilder<'a> {
 	pub build_path: PathBuf,
 	/// Whether the site is going to be served locally with the dev server.
 	serving: bool,
+
+	/// Resource builder for the site's images section.
+	pub images_builder:
+		ResourceBuilder<crate::images::ImageMetadata, crate::images::ImageTemplateData>,
+	/// Resource builder for the site's blog section.
+	pub blog_builder:
+		ResourceBuilder<crate::blog::BlogPostMetadata, crate::blog::BlogPostTemplateData>,
 }
 
 impl<'a> SiteBuilder<'a> {
@@ -50,6 +61,8 @@ impl<'a> SiteBuilder<'a> {
 		Self {
 			matter: Matter::new(),
 			reg: Handlebars::new(),
+			images_builder: ResourceBuilder::new(crate::images::get_images_resource_config(&site)),
+			blog_builder: ResourceBuilder::new(crate::blog::get_blog_resource_config(&site)),
 			site,
 			build_path,
 			serving,
@@ -94,48 +107,24 @@ impl<'a> SiteBuilder<'a> {
 			std::fs::create_dir(images_path).context("Failed to create images path")?;
 		}
 
+		self.images_builder
+			.load_all(&self)
+			.context("Failed to load images metadata")?;
+		self.blog_builder
+			.load_all(&self)
+			.context("Failed to load blog metadata")?;
+
 		Ok(self)
 	}
 
-	pub fn build_page_raw(
-		&self,
-		page_metadata: PageMetadata,
-		page_html: &str,
-	) -> anyhow::Result<String> {
-		self.build_page_raw_extra(page_metadata, page_html, ())
-	}
-
-	/// Helper to build a page without writing it to disk.
-	pub fn build_page_raw_extra<T>(
-		&self,
-		page_metadata: PageMetadata,
-		page_html: &str,
-		extra: T,
-	) -> anyhow::Result<String>
-	where
-		T: Serialize,
-	{
-		let out = self.reg.render(
-			&page_metadata.template.unwrap_or_else(|| "base".to_string()),
-			&TemplateData {
-				page: page_html,
-				extra,
-			},
-		)?;
-
-		let title = match &page_metadata.title {
-			Some(page_title) => format!("{} / {}", self.site.config.title, page_title),
-			_ => self.site.config.title.clone(),
-		};
-
-		// Modify HTML output
+	/// Function to rewrite HTML wow.
+	pub fn rewrite_html(&self, html: String) -> anyhow::Result<String> {
 		let mut output = Vec::new();
 		let mut rewriter = HtmlRewriter::new(
 			Settings {
 				element_content_handlers: vec![
 					element!("head", |el| {
 						el.prepend(r#"<meta charset="utf-8">"#, ContentType::Html);
-						el.append(&format!("<title>{}</title>", title), ContentType::Html);
 						if self.serving {
 							el.append(r#"<script src="/_dev.js"></script>"#, ContentType::Html);
 						}
@@ -180,10 +169,55 @@ impl<'a> SiteBuilder<'a> {
 			|c: &[u8]| output.extend_from_slice(c),
 		);
 
-		rewriter.write(out.as_bytes())?;
+		rewriter.write(html.as_bytes())?;
 		rewriter.end()?;
 
-		let mut out = String::from_utf8(output)?;
+		Ok(String::from_utf8(output)?)
+	}
+
+	pub fn build_page_raw(
+		&self,
+		page_metadata: PageMetadata,
+		page_html: &str,
+	) -> anyhow::Result<String> {
+		self.build_page_raw_with_extra_data(page_metadata, page_html, ())
+	}
+
+	/// Helper to build a page without writing it to disk.
+	pub fn build_page_raw_with_extra_data<T>(
+		&self,
+		page_metadata: PageMetadata,
+		page_html: &str,
+		extra_data: T,
+	) -> anyhow::Result<String>
+	where
+		T: Serialize,
+	{
+		let extra = page_metadata
+			.extra
+			.and_then(|extra| crate::extras::get_extra(&extra));
+
+		let title = match &page_metadata.title {
+			Some(page_title) => format!("{} / {}", self.site.config.title, page_title),
+			_ => self.site.config.title.clone(),
+		};
+
+		let out = self.reg.render(
+			&page_metadata.template.unwrap_or_else(|| "base".to_string()),
+			&TemplateData {
+				page: page_html,
+				title: &title,
+				extra_data,
+			},
+		)?;
+
+		// Modify HTML output
+		let mut out = self.rewrite_html(out)?;
+
+		if let Some(Extra::HtmlModification(f)) = extra {
+			out = f(out, self)?;
+		}
+
 		if !self.serving {
 			out = minifier::html::minify(&out);
 		}
@@ -269,11 +303,11 @@ impl<'a> SiteBuilder<'a> {
 
 	/// Builds the site's various image pages.
 	pub fn build_images(&self) -> anyhow::Result<()> {
-		crate::images::build_images(self)
+		self.images_builder.build_all(self)
 	}
 
 	/// Builds the site's blog.
 	pub fn build_blog(&self) -> anyhow::Result<()> {
-		crate::blog::build_blog(self)
+		self.blog_builder.build_all(self)
 	}
 }

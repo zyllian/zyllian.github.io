@@ -1,16 +1,15 @@
 use serde::{Deserialize, Serialize};
 
 use crate::{
-	builder::SiteBuilder,
-	resource::{ResourceBuilder, ResourceBuilderConfig, ResourceMetadata, ResourceMethods},
-	SiteConfig,
+	resource::{ResourceBuilderConfig, ResourceMetadata, ResourceMethods},
+	Site, SiteConfig,
 };
 
 pub const BLOG_PATH: &str = "blog";
 
-/// Builds the blog.
-pub fn build_blog(site_builder: &SiteBuilder) -> anyhow::Result<()> {
-	let config = ResourceBuilderConfig {
+/// Gets the blog's resource configuration.
+pub fn get_blog_resource_config(site: &Site) -> ResourceBuilderConfig {
+	ResourceBuilderConfig {
 		source_path: BLOG_PATH.to_string(),
 		output_path_short: BLOG_PATH.to_string(),
 		output_path_long: BLOG_PATH.to_string(),
@@ -19,17 +18,11 @@ pub fn build_blog(site_builder: &SiteBuilder) -> anyhow::Result<()> {
 		rss_template: "rss/blog-post".to_string(),
 		rss_title: "zyl's blog".to_string(),
 		rss_description: "Feed of recent blog posts on zyl's website.".to_string(),
-		list_title: "Blog".to_string(),
-		tag_list_title: "Blog Tags".to_string(),
-		resource_name_plural: "Blog posts".to_string(),
-		resources_per_page: site_builder.site.config.blog_posts_per_page,
-	};
-
-	let mut builder = ResourceBuilder::<BlogPostMetadata, BlogPostTemplateData>::new(config);
-	builder.load_all(site_builder)?;
-	builder.build_all(site_builder)?;
-
-	Ok(())
+		list_title: "blog".to_string(),
+		tag_list_title: "blog tags".to_string(),
+		resource_name_plural: "blog posts".to_string(),
+		resources_per_page: site.config.blog_posts_per_page,
+	}
 }
 
 /// Metadata for a blog post.
