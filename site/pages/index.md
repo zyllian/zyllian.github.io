@@ -2,7 +2,7 @@
 extra: index
 ---
 
-# zyl's website
+# zyl is gay
 
 hi! i'm zyl, a trans doggirlthing <abbr title="therian">ΘΔ</abbr> in the pnw.
 
