@@ -48,6 +48,7 @@ fn create(
 	if path.is_dir() {
 		return Ok(());
 	}
+	println!("{relative_path:?}");
 	if let Ok(page_path) = relative_path.strip_prefix(PAGES_PATH) {
 		let (_page_name, page_name_str) = get_name(page_path);
 
@@ -78,9 +79,11 @@ fn create(
 		std::fs::copy(path, builder.build_path.join(root_path))?;
 	} else if let Ok(_image_path) = relative_path.strip_prefix(crate::images::IMAGES_PATH) {
 		// HACK: this could get very inefficient with a larger number of images. should definitely optimize
+		builder.images_builder.load_all(builder)?;
 		builder.build_images()?;
 	} else if let Ok(_blog_path) = relative_path.strip_prefix(crate::blog::BLOG_PATH) {
 		// HACK: same as above
+		builder.blog_builder.load_all(builder)?;
 		builder.build_blog()?;
 	}
 
@@ -112,9 +115,12 @@ fn remove(builder: &mut SiteBuilder, path: &Path, relative_path: &Path) -> anyho
 		std::fs::remove_file(builder.build_path.join(root_path))?;
 	} else if let Ok(_image_path) = relative_path.strip_prefix(crate::images::IMAGES_PATH) {
 		// HACK: same as in `create`
+		builder.images_builder.load_all(builder)?;
 		builder.build_images()?;
 	} else if let Ok(_blog_path) = relative_path.strip_prefix(crate::blog::BLOG_PATH) {
 		// HACK: same as above
+		builder.blog_builder.load_all(builder)?;
+		builder.build_blog()?;
 	}
 
 	Ok(())
