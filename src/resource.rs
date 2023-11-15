@@ -43,15 +43,15 @@ pub struct ResourceMetadata<T> {
 pub struct ResourceTemplateData<'r, M, E> {
 	/// The resource's metadata.
 	#[serde(flatten)]
-	resource: &'r ResourceMetadata<M>,
+	pub resource: &'r ResourceMetadata<M>,
 	/// The resource's ID.
-	id: String,
+	pub id: String,
 	/// Extra data to be passed to the template.
 	#[serde(flatten)]
-	extra: E,
+	pub extra: E,
 	/// The resource's timestamp. Duplicated to change serialization method.
 	#[serde(serialize_with = "ResourceTemplateData::<M, E>::timestamp_formatter")]
-	timestamp: OffsetDateTime,
+	pub timestamp: OffsetDateTime,
 }
 
 impl<'r, M, E> ResourceTemplateData<'r, M, E> {
