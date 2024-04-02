@@ -163,7 +163,7 @@ impl Site {
 			.watch(site.site_path.clone(), move |event| {
 				let peers = hw_peers.clone();
 
-				match (|| {
+				let r = (|| {
 					let path = event
 						.paths
 						.first()
@@ -221,7 +221,9 @@ impl Site {
 						// }
 						_ => Ok(false),
 					}
-				})() {
+				})();
+
+				match r {
 					Ok(reload) => {
 						if reload {
 							// Send reload event to connected websockets
