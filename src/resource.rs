@@ -14,10 +14,6 @@ use time::{format_description::well_known::Rfc2822, OffsetDateTime};
 
 use crate::{builder::SiteBuilder, link_list::Link, PageMetadata, SiteConfig};
 
-pub trait ResourceConfig<R> {
-	fn new(builder: &SiteBuilder) -> Self;
-}
-
 /// Metadata for resources.
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ResourceMetadata<T> {
