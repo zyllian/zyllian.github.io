@@ -26,7 +26,10 @@ async fn main() -> eyre::Result<()> {
 	}
 
 	match mode {
-		Mode::Build => site.build_once()?,
+		Mode::Build => {
+			println!("Building site...");
+			site.build_once()?
+		}
 		Mode::Serve => site.serve().await?,
 	}
 
