@@ -11,7 +11,10 @@ enum Mode {
 
 #[cfg(feature = "serve")]
 #[tokio::main]
-async fn main() -> anyhow::Result<()> {
+async fn main() -> eyre::Result<()> {
+	#[cfg(feature = "color-eyre")]
+	color_eyre::install()?;
+
 	let site = Site::new(&Path::new("site").canonicalize()?)?;
 
 	let mut mode = Mode::Build;
@@ -33,7 +36,7 @@ async fn main() -> anyhow::Result<()> {
 }
 
 #[cfg(not(feature = "serve"))]
-fn main() -> anyhow::Result<()> {
+fn main() -> eyre::Result<()> {
 	let site = Site::new(&Path::new("site").canonicalize()?)?;
 	site.build_once()?;
 

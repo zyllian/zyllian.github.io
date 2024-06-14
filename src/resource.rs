@@ -5,7 +5,7 @@ use std::{
 	path::{Path, PathBuf},
 };
 
-use anyhow::Context;
+use eyre::Context;
 use itertools::Itertools;
 use pulldown_cmark::{Options, Parser};
 use rss::{validation::Validate, ChannelBuilder, ItemBuilder};
@@ -72,9 +72,9 @@ where
 {
 	fn get_short_desc(&self) -> String;
 
-	fn get_extra_resource_template_data(&self, site_config: &SiteConfig) -> anyhow::Result<E>;
+	fn get_extra_resource_template_data(&self, site_config: &SiteConfig) -> eyre::Result<E>;
 
-	fn get_head_data(&self, _site_config: &SiteConfig) -> anyhow::Result<String> {
+	fn get_head_data(&self, _site_config: &SiteConfig) -> eyre::Result<String> {
 		Ok(String::new())
 	}
 }
@@ -158,14 +158,14 @@ where
 	}
 
 	/// Loads resource metadata from the given path.
-	fn load(builder: &SiteBuilder, path: &Path) -> anyhow::Result<(String, ResourceMetadata<M>)> {
+	fn load(builder: &SiteBuilder, path: &Path) -> eyre::Result<(String, ResourceMetadata<M>)> {
 		let id = Self::get_id(path);
 
 		let input = std::fs::read_to_string(path)?;
 		let mut page = builder
 			.matter
 			.parse_with_struct::<ResourceMetadata<M>>(&input)
-			.ok_or_else(|| anyhow::anyhow!("Failed to parse resource front matter"))?;
+			.ok_or_else(|| eyre::anyhow!("Failed to parse resource front matter"))?;
 
 		let parser = Parser::new_ext(&page.content, Options::all());
 		let mut html = String::new();
@@ -177,7 +177,7 @@ where
 	}
 
 	/// Loads all resource metadata from the given config.
-	pub fn load_all(&self, builder: &SiteBuilder) -> anyhow::Result<()> {
+	pub fn load_all(&self, builder: &SiteBuilder) -> eyre::Result<()> {
 		let mut lmd = self.loaded_metadata.borrow_mut();
 		lmd.clear();
 		for e in builder
@@ -213,7 +213,7 @@ where
 		builder: &SiteBuilder,
 		id: String,
 		resource: &ResourceMetadata<M>,
-	) -> anyhow::Result<()> {
+	) -> eyre::Result<()> {
 		let out_path = self.build_path(&builder.build_path, &id);
 		let out = {
 			let data = ResourceTemplateData {
@@ -240,7 +240,7 @@ where
 		Ok(())
 	}
 
-	pub fn build_all(&self, builder: &SiteBuilder) -> anyhow::Result<()> {
+	pub fn build_all(&self, builder: &SiteBuilder) -> eyre::Result<()> {
 		let out_short = builder.build_path.join(&self.config.output_path_short);
 		let out_long = builder.build_path.join(&self.config.output_path_long);
 
@@ -276,7 +276,7 @@ where
 			tag: Option<&str>,
 			out_path: &Path,
 			items_per_page: usize,
-		) -> anyhow::Result<()>
+		) -> eyre::Result<()>
 		where
 			M: Serialize,
 			E: Serialize,
@@ -415,7 +415,7 @@ where
 			.last_build_date(Some(OffsetDateTime::now_utc().format(&Rfc2822)?))
 			.items(items)
 			.build();
-		channel.validate().context("Failed to validate RSS feed")?;
+		channel.validate().wrap_err("Failed to validate RSS feed")?;
 		let out = channel.to_string();
 		std::fs::write(out_long.join("rss.xml"), out)?;
 

@@ -2,7 +2,7 @@
 
 use std::path::PathBuf;
 
-use anyhow::Context;
+use eyre::Context;
 use gray_matter::{engine::YAML, Matter};
 use handlebars::Handlebars;
 use lol_html::{element, html_content::ContentType, HtmlRewriter, Settings};
@@ -70,7 +70,7 @@ impl<'a> SiteBuilder<'a> {
 	}
 
 	/// Prepares the site builder for use and sets up the build directory.
-	pub fn prepare(mut self) -> anyhow::Result<Self> {
+	pub fn prepare(mut self) -> eyre::Result<Self> {
 		if self.build_path.exists() {
 			for entry in self.build_path.read_dir()? {
 				let path = &entry?.path();
@@ -84,13 +84,13 @@ impl<'a> SiteBuilder<'a> {
 				}
 			}
 		} else {
-			std::fs::create_dir(&self.build_path).context("Failed to create build directory")?;
+			std::fs::create_dir(&self.build_path).wrap_err("Failed to create build directory")?;
 		}
 
 		for (template_name, template_path) in &self.site.template_index {
 			self.reg
 				.register_template_file(template_name, template_path)
-				.context("Failed to register template file")?;
+				.wrap_err("Failed to register template file")?;
 		}
 
 		let root_path = self.site.site_path.join(ROOT_PATH);
@@ -104,21 +104,21 @@ impl<'a> SiteBuilder<'a> {
 
 		let images_path = self.build_path.join(crate::images::IMAGES_OUT_PATH);
 		if !images_path.exists() {
-			std::fs::create_dir(images_path).context("Failed to create images path")?;
+			std::fs::create_dir(images_path).wrap_err("Failed to create images path")?;
 		}
 
 		self.images_builder
 			.load_all(&self)
-			.context("Failed to load images metadata")?;
+			.wrap_err("Failed to load images metadata")?;
 		self.blog_builder
 			.load_all(&self)
-			.context("Failed to load blog metadata")?;
+			.wrap_err("Failed to load blog metadata")?;
 
 		Ok(self)
 	}
 
 	/// Function to rewrite HTML wow.
-	pub fn rewrite_html(&self, html: String) -> anyhow::Result<String> {
+	pub fn rewrite_html(&self, html: String) -> eyre::Result<String> {
 		let mut output = Vec::new();
 		let mut rewriter = HtmlRewriter::new(
 			Settings {
@@ -179,7 +179,7 @@ impl<'a> SiteBuilder<'a> {
 		&self,
 		page_metadata: PageMetadata,
 		page_html: &str,
-	) -> anyhow::Result<String> {
+	) -> eyre::Result<String> {
 		self.build_page_raw_with_extra_data(page_metadata, page_html, ())
 	}
 
@@ -189,7 +189,7 @@ impl<'a> SiteBuilder<'a> {
 		page_metadata: PageMetadata,
 		page_html: &str,
 		extra_data: T,
-	) -> anyhow::Result<String>
+	) -> eyre::Result<String>
 	where
 		T: Serialize,
 	{
@@ -226,7 +226,7 @@ impl<'a> SiteBuilder<'a> {
 	}
 
 	/// Builds a standard page.
-	pub fn build_page(&self, page_name: &str) -> anyhow::Result<()> {
+	pub fn build_page(&self, page_name: &str) -> eyre::Result<()> {
 		let page_path = self.site.page_index.get(page_name).expect("Missing page");
 
 		let input = std::fs::read_to_string(page_path)
@@ -260,14 +260,14 @@ impl<'a> SiteBuilder<'a> {
 	}
 
 	/// Builds the Sass styles in the site.
-	pub fn build_sass(&self) -> anyhow::Result<()> {
+	pub fn build_sass(&self) -> eyre::Result<()> {
 		let styles_path = self.build_path.join("styles");
 		if !styles_path.exists() {
 			std::fs::create_dir(&styles_path)?;
 		}
 		if self.serving {
 			util::remove_dir_contents(&styles_path)
-				.context("Failed to remove old contents of styles directory")?;
+				.wrap_err("Failed to remove old contents of styles directory")?;
 		}
 		let sass_path = self.site.site_path.join(SASS_PATH);
 		for sheet in &self.site.config.sass_styles {
@@ -277,7 +277,7 @@ impl<'a> SiteBuilder<'a> {
 					Ok(mut css) => {
 						if !self.serving {
 							css = minifier::css::minify(&css)
-								.map_err(|err| anyhow::anyhow!(err))?
+								.map_err(|err| eyre::anyhow!(err))?
 								.to_string();
 						}
 						std::fs::write(styles_path.join(sheet).with_extension("css"), css)
@@ -302,12 +302,12 @@ impl<'a> SiteBuilder<'a> {
 	}
 
 	/// Builds the site's various image pages.
-	pub fn build_images(&self) -> anyhow::Result<()> {
+	pub fn build_images(&self) -> eyre::Result<()> {
 		self.images_builder.build_all(self)
 	}
 
 	/// Builds the site's blog.
-	pub fn build_blog(&self) -> anyhow::Result<()> {
+	pub fn build_blog(&self) -> eyre::Result<()> {
 		self.blog_builder.build_all(self)
 	}
 }

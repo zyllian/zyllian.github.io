@@ -27,7 +27,7 @@ pub fn render_basic_link_list(
 	builder: &SiteBuilder,
 	links: Vec<Link>,
 	title: &str,
-) -> anyhow::Result<String> {
+) -> eyre::Result<String> {
 	let data = LinkTemplateData { links, title };
 	let out = builder.reg.render("basic-link-list", &data)?;
 	let out = builder.build_page_raw(

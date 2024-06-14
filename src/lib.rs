@@ -13,7 +13,7 @@ use std::{
 	path::{Path, PathBuf},
 };
 
-use anyhow::Context;
+use eyre::Context;
 use serde::Deserialize;
 use serving::get_name;
 use url::Url;
@@ -51,7 +51,7 @@ pub struct SiteConfig {
 
 impl SiteConfig {
 	/// Gets a CDN url from the given file name.
-	pub fn cdn_url(&self, file: &str) -> anyhow::Result<Url> {
+	pub fn cdn_url(&self, file: &str) -> eyre::Result<Url> {
 		Ok(self.cdn_url.join(&self.s3_prefix)?.join(file)?)
 	}
 }
@@ -86,24 +86,24 @@ pub struct Site {
 
 impl Site {
 	/// Creates a new site from the given path.
-	pub fn new(site_path: &Path) -> anyhow::Result<Self> {
+	pub fn new(site_path: &Path) -> eyre::Result<Self> {
 		let config: SiteConfig = serde_yaml::from_str(
 			&std::fs::read_to_string(site_path.join("config.yaml"))
-				.context("Failed to read site config")?,
+				.wrap_err("Failed to read site config")?,
 		)
-		.context("Failed to parse site config")?;
+		.wrap_err("Failed to parse site config")?;
 
 		let mut template_index = HashMap::new();
 		let templates_path = site_path.join(TEMPLATES_PATH);
 		for entry in WalkDir::new(&templates_path).into_iter() {
-			let entry = entry.context("Failed to read template entry")?;
+			let entry = entry.wrap_err("Failed to read template entry")?;
 			let path = entry.path();
 
 			if let Some(ext) = path.extension() {
 				if ext == "hbs" && entry.file_type().is_file() {
 					let (_, name) = get_name(
 						path.strip_prefix(&templates_path)
-							.context("This really shouldn't have happened")?,
+							.wrap_err("This really shouldn't have happened")?,
 					);
 					template_index.insert(name, path.to_owned());
 				}
@@ -113,14 +113,14 @@ impl Site {
 		let mut page_index = HashMap::new();
 		let pages_path = site_path.join(PAGES_PATH);
 		for entry in WalkDir::new(&pages_path).into_iter() {
-			let entry = entry.context("Failed to read page entry")?;
+			let entry = entry.wrap_err("Failed to read page entry")?;
 			let path = entry.path();
 
 			if let Some(ext) = path.extension() {
 				if ext == "md" && entry.file_type().is_file() {
 					page_index.insert(
 						path.strip_prefix(&pages_path)
-							.context("This really shouldn't have happened")?
+							.wrap_err("This really shouldn't have happened")?
 							.with_extension("")
 							.to_string_lossy()
 							.to_string(),
@@ -139,7 +139,7 @@ impl Site {
 	}
 
 	/// Builds the site once.
-	pub fn build_once(self) -> anyhow::Result<()> {
+	pub fn build_once(self) -> eyre::Result<()> {
 		let builder = SiteBuilder::new(self, false).prepare()?;
 
 		builder.site.build_all_pages(&builder)?;
@@ -151,7 +151,7 @@ impl Site {
 	}
 
 	/// Helper method to build all available pages.
-	fn build_all_pages(&self, builder: &SiteBuilder) -> anyhow::Result<()> {
+	fn build_all_pages(&self, builder: &SiteBuilder) -> eyre::Result<()> {
 		for page_name in self.page_index.keys() {
 			builder.build_page(page_name)?;
 		}

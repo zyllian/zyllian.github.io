@@ -5,7 +5,7 @@ use crate::{blog::BlogPostMetadata, builder::SiteBuilder, resource::ResourceTemp
 
 #[derive(Debug)]
 pub enum Extra {
-	HtmlModification(fn(page: String, builder: &SiteBuilder) -> anyhow::Result<String>),
+	HtmlModification(fn(page: String, builder: &SiteBuilder) -> eyre::Result<String>),
 }
 
 /// Gets the extra for the given value.
@@ -17,7 +17,7 @@ pub fn get_extra(extra: &str) -> Option<Extra> {
 }
 
 /// Extra to add a sidebar to the index page with recent blog posts on it.
-fn index(page: String, builder: &SiteBuilder) -> anyhow::Result<String> {
+fn index(page: String, builder: &SiteBuilder) -> eyre::Result<String> {
 	#[derive(Debug, Serialize)]
 	struct SidebarTemplateData<'r> {
 		// resources: Vec<&'r ResourceMetadata<BlogPostMetadata>>,

@@ -53,7 +53,7 @@ impl ResourceMethods<ImageTemplateData> for ResourceMetadata<ImageMetadata> {
 	fn get_extra_resource_template_data(
 		&self,
 		site_config: &SiteConfig,
-	) -> anyhow::Result<ImageTemplateData> {
+	) -> eyre::Result<ImageTemplateData> {
 		Ok(ImageTemplateData {
 			src: site_config.cdn_url(&self.inner.file)?.to_string(),
 		})

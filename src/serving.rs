@@ -7,7 +7,7 @@ use std::{
 	sync::{Arc, Mutex},
 };
 
-use anyhow::Context;
+use eyre::Context;
 use futures::SinkExt;
 use hotwatch::{EventKind, Hotwatch};
 use warp::{
@@ -47,7 +47,7 @@ fn create(
 	path: &Path,
 	relative_path: &Path,
 	build: bool,
-) -> anyhow::Result<()> {
+) -> eyre::Result<()> {
 	if path.is_dir() {
 		return Ok(());
 	}
@@ -76,7 +76,7 @@ fn create(
 		builder.site.build_all_pages(builder)?;
 	} else if let Ok(_sass_path) = relative_path.strip_prefix(SASS_PATH) {
 		if build {
-			builder.build_sass().context("Failed to rebuild Sass")?;
+			builder.build_sass().wrap_err("Failed to rebuild Sass")?;
 		}
 	} else if let Ok(root_path) = relative_path.strip_prefix(ROOT_PATH) {
 		std::fs::copy(path, builder.build_path.join(root_path))?;
@@ -94,7 +94,7 @@ fn create(
 }
 
 /// Removes an existing resource.
-fn remove(builder: &mut SiteBuilder, path: &Path, relative_path: &Path) -> anyhow::Result<()> {
+fn remove(builder: &mut SiteBuilder, path: &Path, relative_path: &Path) -> eyre::Result<()> {
 	if path.is_dir() {
 		return Ok(());
 	}
@@ -111,9 +111,9 @@ fn remove(builder: &mut SiteBuilder, path: &Path, relative_path: &Path) -> anyho
 		builder
 			.site
 			.build_all_pages(builder)
-			.context("Failed to rebuild pages")?;
+			.wrap_err("Failed to rebuild pages")?;
 	} else if let Ok(_sass_path) = relative_path.strip_prefix(SASS_PATH) {
-		builder.build_sass().context("Failed to rebuild Sass")?;
+		builder.build_sass().wrap_err("Failed to rebuild Sass")?;
 	} else if let Ok(root_path) = relative_path.strip_prefix(ROOT_PATH) {
 		std::fs::remove_file(builder.build_path.join(root_path))?;
 	} else if let Ok(_image_path) = relative_path.strip_prefix(crate::images::IMAGES_PATH) {
@@ -136,7 +136,7 @@ fn skip_path(builder: &SiteBuilder, path: &Path) -> bool {
 
 impl Site {
 	/// Serves the site for development. Don't use this in production.
-	pub async fn serve(self) -> anyhow::Result<()> {
+	pub async fn serve(self) -> eyre::Result<()> {
 		let addr = SocketAddr::from(([127, 0, 0, 1], 8080));
 
 		let mut builder = SiteBuilder::new(self, true).prepare()?;
@@ -149,11 +149,11 @@ impl Site {
 				eprintln!("Failed to build page {}: {}", page_name, e);
 			}
 		}
-		builder.build_sass().context("Failed to build Sass")?;
+		builder.build_sass().wrap_err("Failed to build Sass")?;
 		builder
 			.build_images()
-			.context("Failed to build image pages")?;
-		builder.build_blog().context("Failed to build blog")?;
+			.wrap_err("Failed to build image pages")?;
+		builder.build_blog().wrap_err("Failed to build blog")?;
 
 		// Map of websocket connections
 		let peers: Arc<Mutex<HashMap<SocketAddr, WebSocket>>> =
@@ -187,7 +187,7 @@ impl Site {
 									println!("CHANGED - {:?}", relp);
 									create(&mut builder, path, &relp, true)?;
 								}
-								Ok::<_, anyhow::Error>(true)
+								Ok::<_, eyre::Error>(true)
 							}
 						}
 						EventKind::Create(_) => {
@@ -235,7 +235,7 @@ impl Site {
 							for (addr, peer) in peers.iter_mut() {
 								let task = async {
 									peer.send(Message::text("reload".to_string())).await?;
-									Ok::<_, anyhow::Error>(())
+									Ok::<_, eyre::Error>(())
 								};
 								to_remove.push(*addr);
 								if let Err(e) = futures::executor::block_on(task) {
@@ -339,7 +339,7 @@ impl<'a> SiteBuilder<'a> {
 		&mut self,
 		template_name: &str,
 		template_path: &Path,
-	) -> anyhow::Result<()> {
+	) -> eyre::Result<()> {
 		self.reg
 			.register_template_file(template_name, template_path)?;
 

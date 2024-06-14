@@ -42,7 +42,7 @@ pub struct BlogPostMetadata {
 
 impl BlogPostMetadata {
 	/// Helper to get the CDN URL to the blog post's header image.
-	fn get_header_image(&self, site_config: &SiteConfig) -> anyhow::Result<String> {
+	fn get_header_image(&self, site_config: &SiteConfig) -> eyre::Result<String> {
 		Ok(site_config.cdn_url(&self.header_image_file)?.to_string())
 	}
 }
@@ -66,7 +66,7 @@ impl ResourceMethods<BlogPostTemplateData> for ResourceMetadata<BlogPostMetadata
 	fn get_extra_resource_template_data(
 		&self,
 		site_config: &SiteConfig,
-	) -> anyhow::Result<BlogPostTemplateData> {
+	) -> eyre::Result<BlogPostTemplateData> {
 		// TODO: render markdown
 		Ok(BlogPostTemplateData {
 			header_image: self.inner.get_header_image(site_config)?,
@@ -83,7 +83,7 @@ impl ResourceMethods<BlogPostTemplateData> for ResourceMetadata<BlogPostMetadata
 		})
 	}
 
-	fn get_head_data(&self, site_config: &SiteConfig) -> anyhow::Result<String> {
+	fn get_head_data(&self, site_config: &SiteConfig) -> eyre::Result<String> {
 		// TODO: update this so we're not just doing raw html injection lmao
 		Ok(format!(
 			r#"
