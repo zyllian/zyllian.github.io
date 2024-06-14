@@ -15,6 +15,7 @@ use std::{
 
 use anyhow::Context;
 use serde::Deserialize;
+use serving::get_name;
 use url::Url;
 use walkdir::WalkDir;
 
@@ -100,14 +101,11 @@ impl Site {
 
 			if let Some(ext) = path.extension() {
 				if ext == "hbs" && entry.file_type().is_file() {
-					template_index.insert(
+					let (_, name) = get_name(
 						path.strip_prefix(&templates_path)
-							.context("This really shouldn't have happened")?
-							.with_extension("")
-							.to_string_lossy()
-							.to_string(),
-						path.to_owned(),
+							.context("This really shouldn't have happened")?,
 					);
+					template_index.insert(name, path.to_owned());
 				}
 			}
 		}
