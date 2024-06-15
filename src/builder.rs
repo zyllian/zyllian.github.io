@@ -95,10 +95,16 @@ impl<'a> SiteBuilder<'a> {
 
 		let root_path = self.site.site_path.join(ROOT_PATH);
 		if root_path.exists() {
-			for entry in root_path.read_dir()? {
+			for entry in walkdir::WalkDir::new(&root_path) {
 				let entry = entry?;
 				let path = entry.path();
-				std::fs::copy(&path, self.build_path.join(path.strip_prefix(&root_path)?))?;
+				if path.is_dir() {
+					continue;
+				}
+				let output_path = self.build_path.join(path.strip_prefix(&root_path)?);
+				let parent_path = output_path.parent().expect("should never fail");
+				std::fs::create_dir_all(parent_path)?;
+				std::fs::copy(path, output_path)?;
 			}
 		}
 
