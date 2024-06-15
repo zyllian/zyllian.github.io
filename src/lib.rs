@@ -67,6 +67,9 @@ pub struct PageMetadata {
 	pub title: Option<String>,
 	/// The template to use for the page. If not specified, it defaults to "base".
 	pub template: Option<String>,
+	/// The page's custom scripts, if any.
+	#[serde(default)]
+	pub scripts: Vec<String>,
 	/// The extra stuff to run for the page, if any.
 	pub extra: Option<String>,
 }

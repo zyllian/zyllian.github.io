@@ -21,6 +21,8 @@ struct TemplateData<'a, T> {
 	pub page: &'a str,
 	/// The page's title.
 	pub title: &'a str,
+	/// The page's custom scripts.
+	pub scripts: &'a [String],
 	/// Custom template data.
 	#[serde(flatten)]
 	pub extra_data: T,
@@ -213,6 +215,7 @@ impl<'a> SiteBuilder<'a> {
 			&TemplateData {
 				page: page_html,
 				title: &title,
+				scripts: &page_metadata.scripts,
 				extra_data,
 			},
 		)?;
