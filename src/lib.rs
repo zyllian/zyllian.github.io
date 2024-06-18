@@ -70,6 +70,9 @@ pub struct PageMetadata {
 	/// The page's custom scripts, if any.
 	#[serde(default)]
 	pub scripts: Vec<String>,
+	/// the page's custom styles, if any.
+	#[serde(default)]
+	pub styles: Vec<String>,
 	/// The extra stuff to run for the page, if any.
 	pub extra: Option<String>,
 }
