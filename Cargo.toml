@@ -23,7 +23,7 @@ pulldown-cmark = {version = "0.11", default-features = false, features = [
 ]}
 rss = {version = "2", features = ["validation"]}
 serde = {version = "1", features = ["derive"]}
-serde_yaml = "0.9"
+serde_yml = "0.0.10"
 time = {version = "0.3", features = ["serde-human-readable"]}
 tokio = {version = "1.10", features = [
   "macros",

@@ -61,7 +61,7 @@ fn create(
 			builder.build_blog()?;
 		}
 	} else if relative_path.display().to_string() == "config.yaml" {
-		let new_config = serde_yaml::from_str(&std::fs::read_to_string(path)?)?;
+		let new_config = serde_yml::from_str(&std::fs::read_to_string(path)?)?;
 		builder.site.config = new_config;
 		builder.site.build_all_pages(builder)?;
 	} else if let Ok(_sass_path) = relative_path.strip_prefix(SASS_PATH) {
