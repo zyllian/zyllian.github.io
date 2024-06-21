@@ -7,11 +7,14 @@ use zyl_site::Site;
 enum Mode {
 	Build,
 	Serve,
+	Now,
 }
 
 #[cfg(feature = "serve")]
 #[tokio::main]
 async fn main() -> eyre::Result<()> {
+	use time::{format_description::well_known::Rfc3339, OffsetDateTime};
+
 	#[cfg(feature = "color-eyre")]
 	color_eyre::install()?;
 
@@ -22,6 +25,9 @@ async fn main() -> eyre::Result<()> {
 		if arg == "serve" {
 			mode = Mode::Serve;
 			break;
+		} else if arg == "now" {
+			mode = Mode::Now;
+			break;
 		}
 	}
 
@@ -31,6 +37,14 @@ async fn main() -> eyre::Result<()> {
 			site.build_once()?
 		}
 		Mode::Serve => site.serve().await?,
+		Mode::Now => {
+			let time = OffsetDateTime::now_utc();
+			println!(
+				"{}",
+				time.format(&Rfc3339)
+					.expect("failed to format the current time")
+			);
+		}
 	}
 
 	println!("Build complete!");
