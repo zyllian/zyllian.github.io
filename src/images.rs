@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::{
-	resource::{ResourceBuilderConfig, ResourceMetadata, ResourceMethods},
+	resource::{EmbedMetadata, ResourceBuilderConfig, ResourceMetadata, ResourceMethods},
 	Site, SiteConfig,
 };
 
@@ -37,6 +37,12 @@ pub struct ImageMetadata {
 	pub file: String,
 }
 
+impl ImageMetadata {
+	fn get_image_url(&self, site_config: &SiteConfig) -> eyre::Result<String> {
+		Ok(site_config.cdn_url(&self.file)?.to_string())
+	}
+}
+
 /// Template data for a specific image.
 #[derive(Debug, Serialize)]
 pub struct ImageTemplateData {
@@ -55,7 +61,20 @@ impl ResourceMethods<ImageTemplateData> for ResourceMetadata<ImageMetadata> {
 		site_config: &SiteConfig,
 	) -> eyre::Result<ImageTemplateData> {
 		Ok(ImageTemplateData {
-			src: site_config.cdn_url(&self.inner.file)?.to_string(),
+			src: self.inner.get_image_url(site_config)?,
 		})
+	}
+
+	fn get_head_data(&self, site_config: &SiteConfig) -> eyre::Result<String> {
+		Ok(EmbedMetadata {
+			title: self.title.clone(),
+			site_name: &site_config.title,
+			description: self.inner.desc.clone(),
+			image: Some(self.inner.get_image_url(site_config)?),
+			url: None,
+			theme_color: "rgb(255, 196, 252)".to_string(),
+			large_image: true,
+		}
+		.build())
 	}
 }
