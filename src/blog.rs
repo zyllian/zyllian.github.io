@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::{
-	resource::{ResourceBuilderConfig, ResourceMetadata, ResourceMethods},
+	resource::{EmbedMetadata, ResourceBuilderConfig, ResourceMetadata, ResourceMethods},
 	Site, SiteConfig,
 };
 
@@ -84,19 +84,15 @@ impl ResourceMethods<BlogPostTemplateData> for ResourceMetadata<BlogPostMetadata
 	}
 
 	fn get_head_data(&self, site_config: &SiteConfig) -> eyre::Result<String> {
-		// TODO: update this so we're not just doing raw html injection lmao
-		Ok(format!(
-			r#"
-		<meta property="og:site_name" content="{}">
-		<meta name="twitter:card" content="summary_large_image">
-		<meta name="twitter:title" content="{}">
-		<meta name="twitter:image" content="{}">
-		<meta name="og:description" content="{}">
-		"#,
-			site_config.title,
-			self.title,
-			self.inner.get_header_image(site_config)?,
-			self.inner.desc,
-		))
+		Ok(EmbedMetadata {
+			title: self.title.clone(),
+			site_name: &site_config.title,
+			description: Some(self.inner.desc.clone()),
+			image: Some(self.inner.get_header_image(site_config)?),
+			url: None,
+			theme_color: "rgb(255, 196, 252)".to_string(),
+			large_image: true,
+		}
+		.build())
 	}
 }

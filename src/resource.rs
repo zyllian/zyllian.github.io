@@ -79,6 +79,47 @@ where
 	}
 }
 
+/// struct for adding custom meta content embeds
+#[derive(Debug)]
+pub struct EmbedMetadata<'s> {
+	pub title: String,
+	pub site_name: &'s str,
+	pub description: Option<String>,
+	pub url: Option<String>,
+	pub image: Option<String>,
+	pub theme_color: String,
+	pub large_image: bool,
+}
+
+impl<'s> EmbedMetadata<'s> {
+	/// builds the embed html tags
+	pub fn build(self) -> String {
+		let mut s = format!(r#"<meta content="{}" property="og:title">"#, self.title);
+		s = format!(
+			r#"{s}<meta content="{}" property="og:site_name">"#,
+			self.site_name
+		);
+		if let Some(description) = self.description {
+			s = format!(r#"{s}<meta content="{description}" property="og:description">"#);
+		}
+		if let Some(url) = self.url {
+			s = format!(r#"{s}<meta content="{url}" property="og:url">"#);
+		}
+		if let Some(image) = self.image {
+			s = format!(r#"{s}<meta content="{image}" property="og:image">"#);
+		}
+		s = format!(
+			r#"{s}<meta content="{}" name="theme-color">"#,
+			self.theme_color
+		);
+		if self.large_image {
+			s = format!(r#"{s}<meta name="twitter:card" content="summary_large_image">"#);
+		}
+
+		s
+	}
+}
+
 #[derive(Debug, Serialize)]
 struct ResourceListTemplateData<'r, M, E> {
 	resources: Vec<&'r ResourceTemplateData<'r, M, E>>,
