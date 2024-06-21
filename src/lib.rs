@@ -87,7 +87,7 @@ pub struct Site {
 impl Site {
 	/// Creates a new site from the given path.
 	pub fn new(site_path: &Path) -> eyre::Result<Self> {
-		let config: SiteConfig = serde_yaml::from_str(
+		let config: SiteConfig = serde_yml::from_str(
 			&std::fs::read_to_string(site_path.join("config.yaml"))
 				.wrap_err("Failed to read site config")?,
 		)
