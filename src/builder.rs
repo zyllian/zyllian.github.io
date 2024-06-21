@@ -133,7 +133,7 @@ impl<'a> SiteBuilder<'a> {
 					}),
 					element!("a", |el| {
 						if let Some(mut href) = el.get_attribute("href") {
-							if let Some((command, new_href)) = href.split_once('$') {
+							if let Some((command, mut new_href)) = href.split_once('$') {
 								#[allow(clippy::single_match)]
 								match command {
 									"me" => {
@@ -142,7 +142,9 @@ impl<'a> SiteBuilder<'a> {
 											&(el.get_attribute("rel").unwrap_or_default() + " me"),
 										)?;
 									}
-									_ => {}
+									_ => {
+										new_href = &href;
+									}
 								}
 								href = new_href.to_string();
 								el.set_attribute("href", &href)?;
