@@ -18,22 +18,12 @@ use warp::{
 	Filter,
 };
 
-use crate::{Site, SiteBuilder, PAGES_PATH, ROOT_PATH, SASS_PATH, TEMPLATES_PATH};
+use crate::{util::get_name, Site, SiteBuilder, PAGES_PATH, ROOT_PATH, SASS_PATH, TEMPLATES_PATH};
 
 fn with_build_path(
 	build_path: PathBuf,
 ) -> impl Filter<Extract = (PathBuf,), Error = std::convert::Infallible> + Clone {
 	warp::any().map(move || build_path.clone())
-}
-
-/// Helper to get the "name" of a path.
-pub fn get_name(path: &Path) -> (PathBuf, String) {
-	let name = path.with_extension("");
-	let name_str = name
-		.display()
-		.to_string()
-		.replace(std::path::MAIN_SEPARATOR, "/");
-	(name, name_str)
 }
 
 /// Helper to make a path relative.

@@ -15,8 +15,8 @@ use std::{
 
 use eyre::Context;
 use serde::Deserialize;
-use serving::get_name;
 use url::Url;
+use util::get_name;
 use walkdir::WalkDir;
 
 use builder::SiteBuilder;
