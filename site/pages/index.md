@@ -6,7 +6,7 @@ extra: index
 
 hi! i'm zyl, a trans doggirlthing <abbr title="therian">ΘΔ</abbr> in the pnw.
 
-if you want to see mostly stuff of my cat and some short game clips (most are unlisted in a public playlist) [i have a youtube over here](https://youtube.com/@zyllian)
+if you're interested, check out [my youtube](me$https://youtube.com/@zylpup) to see what i've got going on there
 
 if you're an adult i have a couple socials floating around:
 
