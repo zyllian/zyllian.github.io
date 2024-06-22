@@ -21,6 +21,8 @@ struct TemplateData<'a, T> {
 	pub page: &'a str,
 	/// The page's title.
 	pub title: &'a str,
+	/// Custom head data for the page.
+	pub head: Option<String>,
 	/// The page's custom scripts.
 	pub scripts: &'a [String],
 	/// the page's custom styles.
@@ -214,11 +216,17 @@ impl<'a> SiteBuilder<'a> {
 			_ => self.site.config.title.clone(),
 		};
 
+		let head = page_metadata.embed.map(|mut embed| {
+			embed.site_name.clone_from(&self.site.config.title);
+			embed.build()
+		});
+
 		let out = self.reg.render(
 			&page_metadata.template.unwrap_or_else(|| "base".to_string()),
 			&TemplateData {
 				page: page_html,
 				title: &title,
+				head,
 				scripts: &page_metadata.scripts,
 				styles: &page_metadata.styles,
 				extra_data,

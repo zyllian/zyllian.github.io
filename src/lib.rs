@@ -14,6 +14,7 @@ use std::{
 };
 
 use eyre::Context;
+use resource::EmbedMetadata;
 use serde::Deserialize;
 use url::Url;
 use util::get_name;
@@ -67,6 +68,9 @@ pub struct PageMetadata {
 	pub title: Option<String>,
 	/// The template to use for the page. If not specified, it defaults to "base".
 	pub template: Option<String>,
+	/// custom embed info for a template
+	#[serde(default)]
+	pub embed: Option<EmbedMetadata>,
 	/// The page's custom scripts, if any.
 	#[serde(default)]
 	pub scripts: Vec<String>,
