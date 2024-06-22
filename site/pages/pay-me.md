@@ -1,5 +1,9 @@
 ---
 title: pay me!!
+embed:
+  title: pay me!!
+  site_name: test
+  description: send trans people money. like me.
 ---
 
 # pay me!!
