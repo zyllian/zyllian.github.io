@@ -125,8 +125,8 @@ impl EmbedMetadata {
 		s
 	}
 
-	fn default_theme_color() -> String {
-		"rgb(255, 196, 252)".to_string()
+	pub fn default_theme_color() -> String {
+		"ffc4fc".to_string()
 	}
 }
 
