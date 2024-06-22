@@ -86,7 +86,7 @@ impl ResourceMethods<BlogPostTemplateData> for ResourceMetadata<BlogPostMetadata
 	fn get_head_data(&self, site_config: &SiteConfig) -> eyre::Result<String> {
 		Ok(EmbedMetadata {
 			title: self.title.clone(),
-			site_name: &site_config.title,
+			site_name: site_config.title.clone(),
 			description: Some(self.inner.desc.clone()),
 			image: Some(self.inner.get_header_image(site_config)?),
 			url: None,

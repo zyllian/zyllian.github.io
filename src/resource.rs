@@ -80,18 +80,24 @@ where
 }
 
 /// struct for adding custom meta content embeds
-#[derive(Debug)]
-pub struct EmbedMetadata<'s> {
+#[derive(Debug, Deserialize)]
+pub struct EmbedMetadata {
 	pub title: String,
-	pub site_name: &'s str,
+	#[serde(default)]
+	pub site_name: String,
+	#[serde(default)]
 	pub description: Option<String>,
+	#[serde(default)]
 	pub url: Option<String>,
+	#[serde(default)]
 	pub image: Option<String>,
+	#[serde(default = "EmbedMetadata::default_theme_color")]
 	pub theme_color: String,
+	#[serde(default)]
 	pub large_image: bool,
 }
 
-impl<'s> EmbedMetadata<'s> {
+impl EmbedMetadata {
 	/// builds the embed html tags
 	pub fn build(self) -> String {
 		let mut s = format!(r#"<meta content="{}" property="og:title">"#, self.title);
@@ -117,6 +123,10 @@ impl<'s> EmbedMetadata<'s> {
 		}
 
 		s
+	}
+
+	fn default_theme_color() -> String {
+		"rgb(255, 196, 252)".to_string()
 	}
 }
 
