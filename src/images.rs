@@ -72,7 +72,7 @@ impl ResourceMethods<ImageTemplateData> for ResourceMetadata<ImageMetadata> {
 			description: self.inner.desc.clone(),
 			image: Some(self.inner.get_image_url(site_config)?),
 			url: None,
-			theme_color: "rgb(255, 196, 252)".to_string(),
+			theme_color: EmbedMetadata::default_theme_color(),
 			large_image: true,
 		}
 		.build())
