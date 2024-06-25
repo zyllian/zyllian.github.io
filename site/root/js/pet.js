@@ -73,6 +73,15 @@
 
   const petDisplay = document.querySelector("#pet-display");
   const thePet = petDisplay.querySelector(".the-pet");
+
+  const status = petDisplay.querySelector(".status");
+  const statusHungry = status.querySelector("[name=hungry]");
+  const statusStarving = status.querySelector("[name=starving]");
+  const statusUnhappy = status.querySelector("[name=unhappy]");
+  const statusMessy1 = status.querySelector("[name=messy-1]");
+  const statusMessy2 = status.querySelector("[name=messy-2]");
+  const statusMessy3 = status.querySelector("[name=messy-3]");
+
   const petName = document.querySelectorAll(".pet-name");
   const eggDiv = document.querySelector("div#egg");
   const petSetup = document.querySelector("#pet-setup");
@@ -231,6 +240,13 @@
       thePet.classList.remove("elder");
       thePet.classList.remove("dead");
 
+      statusHungry.classList.add("hidden");
+      statusStarving.classList.add("hidden");
+      statusUnhappy.classList.add("hidden");
+      statusMessy1.classList.add("hidden");
+      statusMessy2.classList.add("hidden");
+      statusMessy3.classList.add("hidden");
+
       let width = 0;
       let height = 0;
 
@@ -280,6 +296,22 @@
         thePet.classList.add("dead");
       } else if (this.lifeStage !== LIFE_STAGE_EGG) {
         thePet.classList.add(this.type);
+
+        if (this.food <= MAX_FOOD / 10) {
+          statusStarving.classList.remove("hidden");
+        } else if (this.food <= MAX_FOOD / 2) {
+          statusHungry.classList.remove("hidden");
+        }
+        if (this.happiness <= MAX_HAPPINESS / 3) {
+          statusUnhappy.classList.remove("hidden");
+        }
+        if (this.messCounter >= MAX_MESS) {
+          statusMessy3.classList.remove("hidden");
+        } else if (this.messCounter >= MAX_MESS / 2) {
+          statusMessy2.classList.remove("hidden");
+        } else if (this.messCounter > 0) {
+          statusMessy1.classList.remove("hidden");
+        }
       }
 
       if (this.paused) {
@@ -488,6 +520,7 @@
 
   if (document.body.classList.contains("debug")) {
     debug.classList.remove("hidden");
+    document.pet = pet;
   }
 
   pet.updateDom();
