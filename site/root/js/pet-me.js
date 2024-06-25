@@ -6,7 +6,6 @@
   const url = document.body.classList.contains("debug")
     ? "http://127.0.0.1:8787/api/pet"
     : "https://cf.zyllian.workers.dev/api/pet";
-  console.log(url);
 
   const petCounter = document.querySelector("#pet-counter");
   const count = petCounter.querySelector(".count");
