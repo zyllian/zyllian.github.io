@@ -136,6 +136,7 @@ impl<'a> SiteBuilder<'a> {
 			Settings {
 				element_content_handlers: vec![
 					element!("body", |el| {
+						#[cfg(debug_assertions)]
 						el.set_attribute("class", "debug")?;
 						Ok(())
 					}),
