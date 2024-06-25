@@ -17,6 +17,7 @@
   petButton.addEventListener("click", async () => {
     petButton.disabled = true;
     petButton.outerHTML = "| thanks! &lt;3";
+    count.innerText = Number.parseInt(count.innerText) + 1;
     const r = await (await fetch(url, { method: "post" })).json();
     if (r.count) {
       count.innerText = r.count;
