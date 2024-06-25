@@ -449,8 +449,10 @@
       return;
     }
     canFeed = false;
+    feedButton.disabled = true;
     setTimeout(() => {
       canFeed = true;
+      feedButton.disabled = false;
     }, FEED_TIMER);
 
     pet.feed(38);
@@ -461,8 +463,10 @@
       return;
     }
     canPet = false;
+    petButton.disabled = true;
     setTimeout(() => {
       canPet = true;
+      petButton.disabled = false;
     }, PET_TIMER);
 
     pet.pet();
@@ -473,8 +477,10 @@
       return;
     }
     canClean = false;
+    cleanButton.disabled = true;
     setTimeout(() => {
       canClean = true;
+      cleanButton.disabled = false;
     }, CLEAN_TIMER);
 
     pet.clean();
