@@ -51,3 +51,13 @@ styles: ["pet.css"]
 	<p>LS: <span name="ls"></span> A: <span name="a"></span> F: <span name="f"></span> B: <span name="b"></span> P: <span name="p"></span> MC: <span name="mc"></span> H: <span name="h"></span></p>
 </div>
 </div>
+
+<details>
+	<summary>tips!!</summary>
+	<ul>
+		<li>pets need to be fed about once every eight hours!</li>
+		<li>the game (currently) doesn't simulate while the page is unloaded, so make sure to keep the page loaded for your pet to exist!</li>
+		<li>make sure to keep your pet clean!!</li>
+		<li>if your pet is turning grey, make sure you're giving them the attention they need!! pet's deserve happiness too :(</li>
+	</ul>
+</details>
