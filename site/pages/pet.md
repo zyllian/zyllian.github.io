@@ -66,5 +66,6 @@ styles: ["pet.css"]
 		<li>the game (currently) doesn't simulate while the page is unloaded, so make sure to keep the page loaded for your pet to exist!</li>
 		<li>make sure to keep your pet clean!!</li>
 		<li>if your pet is turning grey, make sure you're giving them the attention they need!! pet's deserve happiness too :(</li>
+		<li>if you take good enough care of your pet they'll stop going potty on the floor!</li>
 	</ul>
 </details>
