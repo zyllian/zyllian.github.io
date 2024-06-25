@@ -2,6 +2,10 @@
 title: pet
 scripts: ["js/pet.js"]
 styles: ["pet.css"]
+embed:
+  title: raise a pet
+  site_name: test
+  description: come raise a cool pet! you could get a square. or a circle. or a triangle. who knows?
 ---
 
 <div id="pet">
