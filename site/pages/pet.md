@@ -80,6 +80,7 @@ embed:
 		<summary>06/25/2024</summary>
 		<ul>
 			<li>pets now are simulated even if the page is unloaded</li>
+			<li>when pets are unhappy &lt;redacted&gt;<!-- their hidden behavior stat drops --></li>
 		</p>
 	</details>
 </details>

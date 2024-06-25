@@ -27,6 +27,8 @@
   const HAPPINESS_EMPTY_STOMACH_MODIFIER = -10 / UPDATES_PER_HOUR;
   /** how quickly a pet's happiness will be reduced by when their space is messy, per piece of mess */
   const HAPPINESS_MESS_MODIFIER = -5 / UPDATES_PER_HOUR;
+  /** how quickly a pet's behavior drops when unhappy */
+  const BEHAVIOR_UNHAPPY_MODIFIER = -5 / UPDATES_PER_HOUR;
 
   /** the amount of happiness gained when the pet is fed (excluding when the pet doesn't yet need food) */
   const FEED_HAPPINESS = 5;
@@ -190,6 +192,10 @@
           if (this.canDie) {
             // TODO: pet dies
           }
+        }
+
+        if (this.happiness <= 0) {
+          this.behavior -= BEHAVIOR_UNHAPPY_MODIFIER;
         }
 
         if (this.pottyTimer < 0) {
