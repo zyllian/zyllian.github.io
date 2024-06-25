@@ -1,7 +1,13 @@
-.hidden {
-  display: none;
-}
+#pet {
+  .hidden {
+    display: none;
+  }
 
-#debug-section [name] {
-  font-weight: bold;
+  #debug-section [name] {
+    font-weight: bold;
+  }
+
+  button {
+    margin-bottom: 4px;
+  }
 }
