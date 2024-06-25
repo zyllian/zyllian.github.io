@@ -1,6 +1,34 @@
 #pet {
-  .hidden {
-    display: none;
+  #pet-display {
+    .the-pet {
+      --color: red;
+      --width: 250px;
+      --height: 250px;
+
+      background-color: var(--color);
+      width: var(--width);
+      height: var(--height);
+
+      &.egg {
+        background-color: white;
+        // egg shape from https://css-tricks.com/the-shapes-of-css/
+        width: 126px;
+        height: 180px;
+        border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+      }
+
+      &.square {
+        border-radius: 2px;
+      }
+
+      &.circle {
+        border-radius: 50%;
+      }
+
+      &.triangle {
+        clip-path: polygon(50% 0, 100% 100%, 0 100%);
+      }
+    }
   }
 
   #debug-section [name] {
@@ -9,5 +37,9 @@
 
   button {
     margin-bottom: 4px;
+  }
+
+  .hidden {
+    display: none;
   }
 }

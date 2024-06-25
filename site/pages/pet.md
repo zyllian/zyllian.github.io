@@ -8,7 +8,7 @@ styles: ["pet.css"]
 <noscript><p>javascript is required for the pet game!!</p></noscript>
 <div id="pet-display">
 	<h2 class="pet-name"></h2>
-	<p>--pet placeholder here--</p>
+	<div class="the-pet"></div>
 	<!-- TODO: make pets interactable -->
 </div>
 

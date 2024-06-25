@@ -61,7 +61,18 @@
   /** the time it takes for a pet to grow past the elder phase */
   const ELDER_TIME = UPDATES_PER_DAY * 7;
 
+  const WIDTH_PUP = 150;
+  const HEIGHT_PUP = 150;
+  const WIDTH_ADULT = 250;
+  const HEIGHT_ADULT = 250;
+  const WIDTH_ELDER = 210;
+  const HEIGHT_ELDER = 210;
+
+  /** the different types of pets available */
+  const PET_TYPES = ["circle", "square", "triangle"];
+
   const petDisplay = document.querySelector("#pet-display");
+  const thePet = petDisplay.querySelector(".the-pet");
   const petName = document.querySelectorAll(".pet-name");
   const eggDiv = document.querySelector("div#egg");
   const petSetup = document.querySelector("#pet-setup");
@@ -69,7 +80,6 @@
   const elderInfo = document.querySelector("div#elder-info");
   const passedAwayInfo = document.querySelector("div#passed-away-info");
   const name = petSetup.querySelector("input[name=pet-name]");
-  const nameItButton = petSetup.querySelector("button");
 
   const petActions = document.querySelector("div#pet-actions");
   const pauseButton = petActions.querySelector("button[name=pause]");
@@ -92,6 +102,16 @@
   let canFeed = true;
   let canPet = true;
   let canClean = true;
+
+  /**
+   * generates a random number within the given range
+   * @param {number} min the minimum number for the random generation
+   * @param {number} max the maximum number for the random generation
+   * @returns the generated number
+   */
+  function rand(min, max) {
+    return Math.random() * (max - min) + min;
+  }
 
   /**
    * class containing information about a pet
@@ -129,6 +149,8 @@
     eggFound = Date.now();
     /** the time the egg hatched */
     hatched = Date.now();
+    /** the pet's type */
+    type = PET_TYPES[Math.floor(rand(0, PET_TYPES.length))];
 
     /**
      * updates a pet
@@ -197,25 +219,54 @@
       petSetup.classList.add("hidden");
       hatchedActions.classList.remove("hidden");
 
+      thePet.classList.remove("egg");
+      thePet.classList.remove("pup");
+      thePet.classList.remove("adult");
+      thePet.classList.remove("elder");
+      thePet.classList.remove("dead");
+
       if (this.lifeStage === LIFE_STAGE_EGG) {
         eggDiv.classList.remove("hidden");
         hatchedActions.classList.add("hidden");
+
+        thePet.classList.add("egg");
       } else if (this.lifeStage === LIFE_STAGE_PUP) {
         if (this.needsAdvancement) {
           petSetup.classList.remove("hidden");
         }
+
+        thePet.classList.add("pup");
+        thePet.style = `--width: ${WIDTH_PUP}px; --height: ${HEIGHT_PUP}px;`;
       } else if (this.lifeStage === LIFE_STAGE_ADULT) {
         if (this.needsAdvancement) {
           adultInfo.classList.remove("hidden");
         }
+
+        thePet.classList.add("adult");
+        thePet.style = `--width: ${WIDTH_ADULT}px; --height: ${HEIGHT_ADULT}px;`;
       } else if (this.lifeStage === LIFE_STAGE_ELDER) {
         if (this.needsAdvancement) {
           if (this.alive) {
             elderInfo.classList.remove("hidden");
           } else {
             passedAwayInfo.classList.remove("hidden");
+
+            thePet.classList.add("elder");
+            thePet.style = `--width: ${WIDTH_ELDER}px; --height: ${HEIGHT_ELDER}px;`;
           }
         }
+      }
+
+      if (!this.alive) {
+        thePet.classList.add("dead");
+      } else if (this.lifeStage !== LIFE_STAGE_EGG) {
+        thePet.classList.add(this.type);
+      }
+
+      if (this.paused) {
+        pauseButton.innerText = "unpause";
+      } else {
+        pauseButton.innerText = "pause";
       }
 
       debugLifeStage.innerText = this.lifeStage;
@@ -378,6 +429,11 @@
     pet.clean();
   });
 
+  pauseButton.addEventListener("click", () => {
+    pet.paused = !pet.paused;
+    pet.updateDom();
+  });
+
   const advance = () => {
     pet.needsAdvancement = false;
     pet.updateDom();
@@ -399,6 +455,8 @@
 
   forceUpdateButton.addEventListener("click", update);
   resetButton.addEventListener("click", () => {
+    thePet.classList.remove(pet.type);
+
     pet = new Pet();
     pet.updateDom();
   });
