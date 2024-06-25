@@ -225,11 +225,6 @@ impl<'a> SiteBuilder<'a> {
 			embed.build()
 		});
 
-		let head = page_metadata.embed.map(|mut embed| {
-			embed.site_name.clone_from(&self.site.config.title);
-			embed.build()
-		});
-
 		let out = self.reg.render(
 			&page_metadata.template.unwrap_or_else(|| "base".to_string()),
 			&TemplateData {
