@@ -23,6 +23,10 @@ struct TemplateData<'a, T> {
 	pub title: &'a str,
 	/// Custom head data for the page.
 	pub head: Option<String>,
+	/// The page's custom scripts.
+	pub scripts: &'a [String],
+	/// the page's custom styles.
+	pub styles: &'a [String],
 	/// Custom template data.
 	#[serde(flatten)]
 	pub extra_data: T,
@@ -97,10 +101,16 @@ impl<'a> SiteBuilder<'a> {
 
 		let root_path = self.site.site_path.join(ROOT_PATH);
 		if root_path.exists() {
-			for entry in root_path.read_dir()? {
+			for entry in walkdir::WalkDir::new(&root_path) {
 				let entry = entry?;
 				let path = entry.path();
-				std::fs::copy(&path, self.build_path.join(path.strip_prefix(&root_path)?))?;
+				if path.is_dir() {
+					continue;
+				}
+				let output_path = self.build_path.join(path.strip_prefix(&root_path)?);
+				let parent_path = output_path.parent().expect("should never fail");
+				std::fs::create_dir_all(parent_path)?;
+				std::fs::copy(path, output_path)?;
 			}
 		}
 
@@ -125,6 +135,10 @@ impl<'a> SiteBuilder<'a> {
 		let mut rewriter = HtmlRewriter::new(
 			Settings {
 				element_content_handlers: vec![
+					element!("body", |el| {
+						el.set_attribute("class", "debug")?;
+						Ok(())
+					}),
 					element!("head", |el| {
 						el.prepend(r#"<meta charset="utf-8">"#, ContentType::Html);
 						if self.serving {
@@ -211,12 +225,19 @@ impl<'a> SiteBuilder<'a> {
 			embed.build()
 		});
 
+		let head = page_metadata.embed.map(|mut embed| {
+			embed.site_name.clone_from(&self.site.config.title);
+			embed.build()
+		});
+
 		let out = self.reg.render(
 			&page_metadata.template.unwrap_or_else(|| "base".to_string()),
 			&TemplateData {
 				page: page_html,
 				title: &title,
 				head,
+				scripts: &page_metadata.scripts,
+				styles: &page_metadata.styles,
 				extra_data,
 			},
 		)?;

@@ -7,6 +7,12 @@
 	<link rel="stylesheet" href="/styles/index.css">
 	<title>{{title}}</title>
 	{{{head}}}
+	{{#each scripts}}
+	<script type="text/javascript" src="{{this}}" defer></script>
+	{{/each}}
+	{{#each styles}}
+	<link rel="stylesheet" href="/styles/{{this}}">
+	{{/each}}
 </head>
 
 <body>
@@ -16,6 +22,7 @@
 			<span class="pronouns">it/puppy(/she)</span>
 		</span>
 		<span class="spacer"></span>
+		<a href="/pet">creature</a> |
 		<a href="/blog/">blog</a> |
 		<a href="/images/">images</a> |
 		<a href="/pay-me">pay me!</a> |
