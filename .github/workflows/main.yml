@@ -35,6 +35,7 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
+      - uses: Swatinem/rust-cache@v2
 
       # Runs a single command using the runners shell
       - name: Build site
