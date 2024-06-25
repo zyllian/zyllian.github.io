@@ -36,11 +36,11 @@
   const CLEAN_HAPPINESS = 1;
 
   /** the minimum amount of time between feedings */
-  const FEED_TIMER = 5000;
+  const FEED_TIMER = 1000 * 60 * 60;
   /** the minimum amount of time between pets */
-  const PET_TIMER = 2000;
+  const PET_TIMER = 60000;
   /** the minimum amount of time between cleans */
-  const CLEAN_TIMER = 5000;
+  const CLEAN_TIMER = 1000 * 60 * 60;
 
   const PET_SAVE_KEY = "pet-game";
 
