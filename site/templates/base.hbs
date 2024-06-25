@@ -6,6 +6,7 @@
 	<meta name="referrer" content="no-referrer">
 	<link rel="stylesheet" href="/styles/index.css">
 	<title>{{title}}</title>
+	<script type="text/javascript" src="/js/pet-me.js" defer></script>
 	{{{head}}}
 	{{#each scripts}}
 	<script type="text/javascript" src="{{this}}" defer></script>
@@ -32,6 +33,11 @@
 		<main class="page">
 			{{{page}}}
 		</main>
+	</div>
+
+	<div id="pet-counter">
+		<span class="count">???</span> pets
+		<button>pet me!</button>
 	</div>
 </body>
 
