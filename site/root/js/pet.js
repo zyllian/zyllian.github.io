@@ -151,6 +151,12 @@
     hatched = Date.now();
     /** the pet's type */
     type = PET_TYPES[Math.floor(rand(0, PET_TYPES.length))];
+    /** the pet's color */
+    color = `rgb(${rand(0, 255)}, ${rand(0, 255)}, ${rand(0, 255)})`;
+    /** the pet's scaled width */
+    scaleWidth = rand(0.6, 1.4);
+    /** the pet's scaled height */
+    scaleHeight = rand(0.6, 1.4);
 
     /**
      * updates a pet
@@ -225,6 +231,9 @@
       thePet.classList.remove("elder");
       thePet.classList.remove("dead");
 
+      let width = 0;
+      let height = 0;
+
       if (this.lifeStage === LIFE_STAGE_EGG) {
         eggDiv.classList.remove("hidden");
         hatchedActions.classList.add("hidden");
@@ -236,14 +245,16 @@
         }
 
         thePet.classList.add("pup");
-        thePet.style = `--width: ${WIDTH_PUP}px; --height: ${HEIGHT_PUP}px;`;
+        width = WIDTH_PUP;
+        height = HEIGHT_PUP;
       } else if (this.lifeStage === LIFE_STAGE_ADULT) {
         if (this.needsAdvancement) {
           adultInfo.classList.remove("hidden");
         }
 
         thePet.classList.add("adult");
-        thePet.style = `--width: ${WIDTH_ADULT}px; --height: ${HEIGHT_ADULT}px;`;
+        width = WIDTH_ADULT;
+        height = HEIGHT_ADULT;
       } else if (this.lifeStage === LIFE_STAGE_ELDER) {
         if (this.needsAdvancement) {
           if (this.alive) {
@@ -252,10 +263,18 @@
             passedAwayInfo.classList.remove("hidden");
 
             thePet.classList.add("elder");
-            thePet.style = `--width: ${WIDTH_ELDER}px; --height: ${HEIGHT_ELDER}px;`;
+            width = WIDTH_ELDER;
+            height = HEIGHT_ELDER;
           }
         }
       }
+
+      width *= this.scaleWidth;
+      height *= this.scaleHeight;
+
+      thePet.style.setProperty("--width", `${width}px`);
+      thePet.style.setProperty("--height", `${height}px`);
+      thePet.style.setProperty("--color", this.color);
 
       if (!this.alive) {
         thePet.classList.add("dead");
