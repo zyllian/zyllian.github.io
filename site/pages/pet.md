@@ -67,9 +67,19 @@ embed:
 	<summary>tips!!</summary>
 	<ul>
 		<li>pets need to be fed about once every eight hours!</li>
-		<li>the game (currently) doesn't simulate while the page is unloaded, so make sure to keep the page loaded for your pet to exist!</li>
+		<li>your pet still exists while the page is unloaded or your computer is off! pause if you need to leave them be for a while!</li>
 		<li>make sure to keep your pet clean!!</li>
 		<li>if your pet is turning grey, make sure you're giving them the attention they need!! pet's deserve happiness too :(</li>
 		<li>if you take good enough care of your pet they'll stop going potty on the floor!</li>
 	</ul>
+</details>
+
+<details>
+	<summary>changelog</summary>
+	<details>
+		<summary>06/25/2024</summary>
+		<ul>
+			<li>pets now are simulated even if the page is unloaded</li>
+		</p>
+	</details>
 </details>

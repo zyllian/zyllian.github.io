@@ -541,6 +541,13 @@
     document.pet = pet;
   }
 
+  const updates = Math.floor(
+    (Date.now() - pet.lastUpdate) / (60000 / UPDATES_PER_MINUTE)
+  );
+  for (let i = 0; i < updates; i++) {
+    pet.update();
+  }
+
   pet.updateDom();
 
   console.log(pet);
