@@ -291,6 +291,18 @@
       thePet.style.setProperty("--width", `${width}px`);
       thePet.style.setProperty("--height", `${height}px`);
       thePet.style.setProperty("--color", this.color);
+      let happinessFilter = 1 - this.happiness / MAX_HAPPINESS;
+      if (happinessFilter < 0.6) {
+        happinessFilter = 0;
+      }
+      happinessFilter = (happinessFilter - 0.6) * 2.5;
+      if (happinessFilter < 0) {
+        happinessFilter = 0;
+      }
+      thePet.style.setProperty(
+        "filter",
+        `grayscale(${happinessFilter * 100}%)`
+      );
 
       if (!this.alive) {
         thePet.classList.add("dead");
