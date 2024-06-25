@@ -135,6 +135,10 @@ impl<'a> SiteBuilder<'a> {
 		let mut rewriter = HtmlRewriter::new(
 			Settings {
 				element_content_handlers: vec![
+					element!("body", |el| {
+						el.set_attribute("class", "debug")?;
+						Ok(())
+					}),
 					element!("head", |el| {
 						el.prepend(r#"<meta charset="utf-8">"#, ContentType::Html);
 						if self.serving {
