@@ -9,7 +9,6 @@ styles: ["pet.css"]
 <div id="pet-display">
 	<h2 class="pet-name"></h2>
 	<div class="the-pet"></div>
-	<!-- TODO: make pets interactable -->
 </div>
 
 <div id="egg">
