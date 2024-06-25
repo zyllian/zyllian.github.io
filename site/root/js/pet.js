@@ -122,7 +122,7 @@
     /** how much mess the pet has made */
     messCounter = 0;
     /** the pet's current happiness */
-    #happiness = MAX_HAPPINESS;
+    _happiness = MAX_HAPPINESS;
     /** the time the pet was last updated */
     lastUpdate = Date.now();
     /** the time the egg was found */
@@ -312,7 +312,7 @@
 
     /** the pet's happiness */
     get happiness() {
-      return this.#happiness;
+      return this._happiness;
     }
 
     set happiness(amount) {
@@ -321,7 +321,7 @@
       } else if (amount > MAX_HAPPINESS) {
         amount = MAX_HAPPINESS;
       }
-      this.#happiness = amount;
+      this._happiness = amount;
     }
   }
 
@@ -385,6 +385,11 @@
   for (let btn of document.querySelectorAll("button.advancement")) {
     btn.addEventListener("click", advance);
   }
+
+  passedAwayInfo.querySelector("button").addEventListener("click", () => {
+    pet = new Pet();
+    pet.updateDom();
+  });
 
   const update = () => {
     pet.update();
