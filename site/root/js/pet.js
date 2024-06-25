@@ -350,7 +350,7 @@
      * makes the pet go potty
      */
     goPotty() {
-      if (this.behavior > 15) {
+      if (this.behavior > 45) {
         // go potty properly
       } else {
         this.messCounter += 1;
