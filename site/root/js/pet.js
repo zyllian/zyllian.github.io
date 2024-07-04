@@ -253,6 +253,9 @@
       statusMessy2.classList.add("hidden");
       statusMessy3.classList.add("hidden");
 
+      adultInfo.classList.add("hidden");
+      elderInfo.classList.add("hidden");
+
       let width = 0;
       let height = 0;
 
@@ -510,8 +513,10 @@
   });
 
   const advance = () => {
+    console.log(pet);
     pet.needsAdvancement = false;
     pet.updateDom();
+    console.log(pet);
   };
   for (let btn of document.querySelectorAll("button.advance")) {
     btn.addEventListener("click", advance);
