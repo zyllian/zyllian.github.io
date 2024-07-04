@@ -513,7 +513,7 @@
     pet.needsAdvancement = false;
     pet.updateDom();
   };
-  for (let btn of document.querySelectorAll("button.advancement")) {
+  for (let btn of document.querySelectorAll("button.advance")) {
     btn.addEventListener("click", advance);
   }
 

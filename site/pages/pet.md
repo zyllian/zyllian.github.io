@@ -77,6 +77,12 @@ embed:
 <details>
 	<summary>changelog</summary>
 	<details>
+		<summary>07/04/2024</summary>
+		<ul>
+			<li>oops pets couldn't age past puppies..</li>
+		</ul>
+	</details>
+	<details>
 		<summary>06/25/2024</summary>
 		<ul>
 			<li>pets now are simulated even if the page is unloaded</li>
