@@ -2,7 +2,7 @@
 
 use std::path::PathBuf;
 
-use eyre::Context;
+use eyre::{eyre, Context, OptionExt};
 use gray_matter::{engine::YAML, Matter};
 use handlebars::Handlebars;
 use lol_html::{element, html_content::ContentType, HtmlRewriter, Settings};
@@ -182,7 +182,49 @@ impl<'a> SiteBuilder<'a> {
 
 						Ok(())
 					}),
+					element!("md", |el| {
+						el.remove();
+						let class = el.get_attribute("class");
+
+						let md_type = el
+							.get_attribute("type")
+							.ok_or_eyre("missing type attribute on markdown tag")?;
+
+						if md_type == "blog-image" {
+							let mut src = el
+								.get_attribute("src")
+								.ok_or_eyre("missing src attribute")?;
+
+							if src.starts_with("cdn$") {
+								src = self.site.config.cdn_url(&src[4..])?.to_string();
+							}
+
+							let class = format!("image {}", class.unwrap_or_default());
+							let content = el
+								.get_attribute("content")
+								.ok_or_eyre("missing content attribute")?;
+
+							el.replace(
+								&format!(
+									r#"
+									<div class="{class}">
+										<a href="{src}">
+											<img src="{src}">
+										</a>
+										<span>{content}</span>
+									</div>
+									"#
+								),
+								ContentType::Html,
+							);
+						} else {
+							return Err(eyre!("unknown markdown tag type: {md_type}").into());
+						}
+
+						Ok(())
+					}),
 				],
+				strict: true,
 				..Default::default()
 			},
 			|c: &[u8]| output.extend_from_slice(c),

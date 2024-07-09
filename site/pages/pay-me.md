@@ -10,6 +10,8 @@ embed:
 
 you should send trans people money. here's how you can send _me_ money:
 
+(preferred methods are feeless, so i'll receive the full amount you send)
+
 - **[\$zylpup](https://cash.app/$zylpup)** on cashapp **(preferred)**
 - **z@zyl.gay** on apple cash **(preferred)**
 - [github sponsors](https://github.com/sponsors/zyllian)

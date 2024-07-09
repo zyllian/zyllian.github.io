@@ -74,8 +74,14 @@ embed:
 	</ul>
 </details>
 
-<details>
+<details open>
 	<summary>changelog</summary>
+	<details>
+		<summary>07/08/2024</summary>
+		<ul>
+			<li>slow pet food/happiness decay</li>
+		</ul>
+	</details>
 	<details>
 		<summary>07/04/2024</summary>
 		<ul>

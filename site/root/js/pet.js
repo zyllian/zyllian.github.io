@@ -12,7 +12,7 @@
   /** the amount of time it takes for a pet to have to GO */
   const POTTY_TIME = 100;
   /** how fast a pet's food value decays */
-  const FOOD_DECAY = MAX_FOOD / (UPDATES_PER_HOUR * 8); // to stay on top should be fed roughly once every 8 hours?
+  const FOOD_DECAY = MAX_FOOD / (UPDATES_PER_HOUR * 12); // to stay on top should be fed roughly once every 8 hours?
   /** the rate at which a pet ages */
   const AGING_RATE = 1;
   /** how fast a pet's potty need decays */
@@ -20,7 +20,7 @@
   /** how much mess can be in a pet's space at once */
   const MAX_MESS = 5;
   /** how fast a pet's happiness decays */
-  const HAPPINESS_DECAY = FOOD_DECAY;
+  const HAPPINESS_DECAY = FOOD_DECAY / 1.5;
   /** a pet's maximum happiness */
   const MAX_HAPPINESS = 100;
   /** how quickly a pet's happiness will be reduced by when hungry */
