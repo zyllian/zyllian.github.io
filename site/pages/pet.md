@@ -9,17 +9,17 @@ embed:
 ---
 
 <div id="pet">
-<noscript><p>javascript is required for the pet game!!</p></noscript>
-<div id="pet-display">
-	<h2 class="pet-name"></h2>
-	<div class="the-pet"></div>
-	<div class="status">
-		<p name="hungry" class="hidden"><span class="pet-name"></span> looks hungry..</p>
-		<p name="starving" class="hidden"><span class="pet-name"></span> is starving!! you need to feed them!!</p>
-		<p name="unhappy" class="hidden"><span class="pet-name"></span> looks at you with wide eyes..</p>
-		<p name="messy-1" class="hidden"><span class="pet-name"></span> has left a bit of a mess! time to clean!</p>
-		<p name="messy-2" class="hidden">there's even more mess in here.. shouldn't you clean it for <span class="pet-name"></span>?</p>
-		<p name="messy-3" class="hidden">what a mess!! <span class="pet-name"></span> can't be happy.. you've gotta clean in here</p>
+	<noscript><h1>javascript is required for the pet game!!</h1></noscript>
+	<div id="pet-display">
+		<h2 class="pet-name"></h2>
+		<div class="the-pet"></div>
+		<div class="status">
+			<p name="hungry" class="hidden"><span class="pet-name"></span> looks hungry..</p>
+			<p name="starving" class="hidden"><span class="pet-name"></span> is starving!! you need to feed them!!</p>
+			<p name="unhappy" class="hidden"><span class="pet-name"></span> looks at you with wide eyes..</p>
+			<p name="messy-1" class="hidden"><span class="pet-name"></span> has left a bit of a mess! time to clean!</p>
+			<p name="messy-2" class="hidden">there's even more mess in here.. shouldn't you clean it for <span class="pet-name"></span>?</p>
+			<p name="messy-3" class="hidden">what a mess!! <span class="pet-name"></span> can't be happy.. you've gotta clean in here</p>
 	</div>
 </div>
 

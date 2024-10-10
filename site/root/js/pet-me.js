@@ -6,6 +6,7 @@
     : "https://cf.zyllian.workers.dev/api/pet";
 
   const petCounter = document.querySelector("#pet-counter");
+  const internal = petCounter.querySelector(".internal");
   const count = petCounter.querySelector(".count");
   const petButton = petCounter.querySelector("button");
 
@@ -24,5 +25,5 @@
     }
   });
 
-  petCounter.style.display = "block";
+  internal.style.display = "block";
 })();

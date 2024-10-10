@@ -191,8 +191,11 @@ abbr {
 }
 
 #pet-counter {
-  display: none;
   position: fixed;
   bottom: 4px;
   right: 4px;
+
+  .internal {
+    display: none;
+  }
 }
