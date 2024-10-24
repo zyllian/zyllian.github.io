@@ -10,9 +10,7 @@ use pulldown_cmark::{Options, Parser};
 use serde::Serialize;
 use url::Url;
 
-use crate::{
-	extras::Extra, resource::ResourceBuilder, util, PageMetadata, Site, ROOT_PATH, SASS_PATH,
-};
+use crate::{resource::ResourceBuilder, util, PageMetadata, Site, ROOT_PATH, SASS_PATH};
 
 /// Struct containing data to be sent to templates when rendering them.
 #[derive(Debug, Serialize)]
@@ -283,8 +281,8 @@ impl<'a> SiteBuilder<'a> {
 		// Modify HTML output
 		let mut out = self.rewrite_html(out)?;
 
-		if let Some(Extra::HtmlModification(f)) = extra {
-			out = f(out, self)?;
+		if let Some(extra) = extra {
+			out = extra.handle(out, self)?;
 		}
 
 		if !self.serving {
