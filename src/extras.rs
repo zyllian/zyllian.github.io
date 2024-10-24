@@ -45,7 +45,7 @@ fn index(page: String, builder: &SiteBuilder) -> eyre::Result<String> {
 	Ok(lol_html::rewrite_str(
 		&page,
 		RewriteStrSettings {
-			element_content_handlers: vec![element!("#content", |el| {
+			element_content_handlers: vec![element!("#content", move |el| {
 				el.append(&sidebar, lol_html::html_content::ContentType::Html);
 				Ok(())
 			})],
