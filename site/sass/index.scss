@@ -127,6 +127,11 @@ abbr {
     margin: 0;
   }
 
+  .timestamp {
+    display: block;
+    margin-bottom: 2px;
+  }
+
   .header-image-wrapper {
     color: var(--accent-text-color-neutral);
     background-color: var(--accent-color-neutral);
