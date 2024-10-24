@@ -1,3 +1,7 @@
+---
+title: my projects
+---
+
 # projects
 
 a simple list of projects i maintain:
