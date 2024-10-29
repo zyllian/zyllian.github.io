@@ -200,18 +200,6 @@ impl Site {
 								Ok(true)
 							}
 						}
-						// EventKind::(old, new) => {
-						// 	if skip_path(&builder, &old) && skip_path(&builder, &new) {
-						// 		Ok(false)
-						// 	} else {
-						// 		let old_rel = rel(&old, &builder.site.site_path)?;
-						// 		let new_rel = rel(&new, &builder.site.site_path)?;
-						// 		println!("RENAMED - {:?} -> {:?}", old_rel, new_rel);
-						// 		create(&mut builder, &new, &new_rel, false)?;
-						// 		remove(&mut builder, &old, &old_rel)?;
-						// 		Ok(true)
-						// 	}
-						// }
 						_ => Ok(false),
 					}
 				})();
