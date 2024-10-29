@@ -284,7 +284,7 @@ impl Site {
 
 						if p.exists() {
 							let mut res = Response::new("".into());
-							match std::fs::read_to_string(&p) {
+							match std::fs::read(&p) {
 								Ok(body) => {
 									*res.body_mut() = body.into();
 								}
