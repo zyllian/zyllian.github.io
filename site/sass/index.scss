@@ -6,6 +6,8 @@ body {
   background-color: var(--bg-color);
   color: var(--text-color);
   height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 header.main-header {
@@ -43,6 +45,14 @@ a {
   .index-info {
     margin: 8px;
   }
+}
+
+hr {
+  width: 100%;
+}
+
+footer#footer {
+  margin: 8px;
 }
 
 abbr {
@@ -193,6 +203,10 @@ abbr {
 
 .float-right {
   float: right;
+}
+
+.flex-spacer {
+  flex-grow: 1;
 }
 
 #pet-counter {
