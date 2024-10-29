@@ -14,7 +14,6 @@ impl Extra {
 	pub fn handle(&self, page: String, builder: &SiteBuilder) -> eyre::Result<String> {
 		match self {
 			Self::Basic(template) => {
-				println!("{template}");
 				let content = builder.reg.render(template, &())?;
 				append_to(&page, &content, "main.page")
 			}
