@@ -52,12 +52,12 @@ fn index(page: String, builder: &SiteBuilder) -> eyre::Result<String> {
 		resources: Vec<ResourceTemplateData<'r, BlogPostMetadata, ()>>,
 	}
 
-	let lmd = builder.blog_builder.loaded_metadata.borrow();
-
 	let sidebar = builder.reg.render(
 		"extras/index-injection",
 		&SidebarTemplateData {
-			resources: lmd
+			resources: builder
+				.blog_builder
+				.loaded_metadata
 				.iter()
 				.take(3)
 				.map(|(id, v)| ResourceTemplateData {

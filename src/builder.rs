@@ -117,14 +117,30 @@ impl<'a> SiteBuilder<'a> {
 			std::fs::create_dir(images_path).wrap_err("Failed to create images path")?;
 		}
 
-		self.images_builder
-			.load_all(&self)
-			.wrap_err("Failed to load images metadata")?;
-		self.blog_builder
-			.load_all(&self)
-			.wrap_err("Failed to load blog metadata")?;
+		self.reload_images_builder()?;
+		self.reload_blog_builder()?;
 
 		Ok(self)
+	}
+
+	/// Reloads the images builder's metadata.
+	pub fn reload_images_builder(&mut self) -> eyre::Result<()> {
+		let mut images_builder = std::mem::take(&mut self.images_builder);
+		images_builder
+			.load_all(self)
+			.wrap_err("Failed to load images metadata")?;
+		self.images_builder = images_builder;
+		Ok(())
+	}
+
+	/// Reloads the blog builder's metadata.
+	pub fn reload_blog_builder(&mut self) -> eyre::Result<()> {
+		let mut blog_builder = std::mem::take(&mut self.blog_builder);
+		blog_builder
+			.load_all(self)
+			.wrap_err("Failed to load blog metadata")?;
+		self.blog_builder = blog_builder;
+		Ok(())
 	}
 
 	/// Function to rewrite HTML wow.

@@ -1,5 +1,4 @@
 use std::{
-	cell::RefCell,
 	collections::BTreeMap,
 	marker::PhantomData,
 	path::{Path, PathBuf},
@@ -146,7 +145,7 @@ struct ExtraResourceRenderData {
 }
 
 /// Config for the resource builder.
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct ResourceBuilderConfig {
 	/// Path to where the resources should be loaded from.
 	pub source_path: String,
@@ -180,7 +179,7 @@ pub struct ResourceBuilder<M, E> {
 	/// The builder's config.
 	pub config: ResourceBuilderConfig,
 	/// The currently loaded resource metadata.
-	pub loaded_metadata: RefCell<Vec<(String, ResourceMetadata<M>)>>,
+	pub loaded_metadata: Vec<(String, ResourceMetadata<M>)>,
 	_extra: PhantomData<E>,
 }
 
@@ -228,8 +227,8 @@ where
 	}
 
 	/// Loads all resource metadata from the given config.
-	pub fn load_all(&self, builder: &SiteBuilder) -> eyre::Result<()> {
-		let mut lmd = self.loaded_metadata.borrow_mut();
+	pub fn load_all(&mut self, builder: &SiteBuilder) -> eyre::Result<()> {
+		let lmd = &mut self.loaded_metadata;
 		lmd.clear();
 		for e in builder
 			.site
@@ -302,7 +301,7 @@ where
 			std::fs::create_dir_all(&out_long)?;
 		}
 
-		let lmd = self.loaded_metadata.borrow();
+		let lmd = &self.loaded_metadata;
 
 		for (id, resource) in lmd.iter() {
 			self.build(builder, id.clone(), resource)?;
@@ -471,5 +470,15 @@ where
 		std::fs::write(out_long.join("rss.xml"), out)?;
 
 		Ok(())
+	}
+}
+
+impl<M, E> Default for ResourceBuilder<M, E> {
+	fn default() -> Self {
+		Self {
+			config: Default::default(),
+			loaded_metadata: Default::default(),
+			_extra: Default::default(),
+		}
 	}
 }

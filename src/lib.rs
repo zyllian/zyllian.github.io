@@ -14,6 +14,7 @@ use std::{
 };
 
 use eyre::Context;
+use rayon::prelude::*;
 use resource::EmbedMetadata;
 use serde::Deserialize;
 use url::Url;
@@ -162,9 +163,10 @@ impl Site {
 
 	/// Helper method to build all available pages.
 	fn build_all_pages(&self, builder: &SiteBuilder) -> eyre::Result<()> {
-		for page_name in self.page_index.keys() {
-			builder.build_page(page_name)?;
-		}
+		self.page_index
+			.keys()
+			.par_bridge()
+			.try_for_each(|page_name| builder.build_page(page_name))?;
 
 		Ok(())
 	}
