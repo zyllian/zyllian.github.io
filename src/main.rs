@@ -33,8 +33,7 @@ async fn main() -> eyre::Result<()> {
 
 	match mode {
 		Mode::Build => {
-			println!("Building site...");
-			site.build_once()?
+			build(site)?;
 		}
 		Mode::Serve => site.serve().await?,
 		Mode::Now => {
@@ -47,17 +46,19 @@ async fn main() -> eyre::Result<()> {
 		}
 	}
 
-	println!("Build complete!");
-
 	Ok(())
 }
 
 #[cfg(not(feature = "serve"))]
 fn main() -> eyre::Result<()> {
 	let site = Site::new(&Path::new("site").canonicalize()?)?;
+	build(site)
+}
+
+fn build(site: Site) -> eyre::Result<()> {
+	println!("Building site...");
+	let now = std::time::Instant::now();
 	site.build_once()?;
-
-	println!("Build complete!");
-
+	println!("Build completed in {:?}", now.elapsed());
 	Ok(())
 }
