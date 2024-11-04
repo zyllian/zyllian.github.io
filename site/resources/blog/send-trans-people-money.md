@@ -3,7 +3,7 @@ title: send trans people money.
 timestamp: 2024-06-21T14:05:00.00Z
 tags: [trans, money]
 desc: you should send trans people money. i'm trans btw
-header_image_file: 2024/06/gamecube.jpeg
+cdn_file: 2024/06/gamecube.jpeg
 header_image_alt: A photo of me holding a Cipon-branded Gamecube controller in my lap.
 ---
 

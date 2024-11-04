@@ -3,7 +3,7 @@ title: i built a minecraft classic server
 timestamp: 2024-07-08T10:37:00.00Z
 tags: [minecraft, minecraft classic, dev]
 desc: i got bored and built a minecraft classic server
-header_image_file: 2024/07/classic2.png
+cdn_file: 2024/07/classic2.png
 header_image_alt: Screenshot of my Minecraft classic server showing two players standing in front of a stack of blocks.
 ---
 

@@ -18,7 +18,10 @@ use warp::{
 	Filter,
 };
 
-use crate::{util::get_name, Site, SiteBuilder, PAGES_PATH, ROOT_PATH, SASS_PATH, TEMPLATES_PATH};
+use crate::{
+	resource::RESOURCES_PATH, util::get_name, Site, SiteBuilder, PAGES_PATH, ROOT_PATH, SASS_PATH,
+	TEMPLATES_PATH,
+};
 
 fn with_build_path(
 	build_path: PathBuf,
@@ -29,6 +32,30 @@ fn with_build_path(
 /// Helper to make a path relative.
 fn rel(path: &Path, prefix: &Path) -> Result<PathBuf, std::path::StripPrefixError> {
 	Ok(path.strip_prefix(prefix)?.to_owned())
+}
+
+/// Helper to build resources in the case of creation or removal.
+fn build_resources(builder: &mut SiteBuilder, path: &Path) -> eyre::Result<()> {
+	let paths: Vec<_> = builder
+		.resource_builders
+		.values()
+		.map(|b| {
+			(
+				b.config.source_path.clone(),
+				path.strip_prefix(&b.config.source_path),
+			)
+		})
+		.filter_map(|(p, v)| v.ok().map(|v| (p, v)))
+		.collect();
+	if paths.len() > 1 {
+		todo!("handle more than one possible match");
+	}
+	if let Some((prefix, _path)) = paths.first() {
+		// HACK: this could get very inefficient with a larger number of resources. should definitely optimize
+		builder.reload_resource_builder(prefix)?;
+		builder.build_resources(prefix)?;
+	}
+	Ok(())
 }
 
 /// Creates or updates a resource.
@@ -57,12 +84,12 @@ fn create(
 		builder.refresh_template(&template_name_str, path)?;
 		if build {
 			builder.site.build_all_pages(builder)?;
-			builder.build_images()?;
-			builder.build_blog()?;
+			builder.build_all_resources()?;
 		}
 	} else if relative_path.display().to_string() == "config.yaml" {
 		let new_config = serde_yml::from_str(&std::fs::read_to_string(path)?)?;
 		builder.site.config = new_config;
+		builder.reload()?;
 		builder.site.build_all_pages(builder)?;
 	} else if let Ok(_sass_path) = relative_path.strip_prefix(SASS_PATH) {
 		if build {
@@ -70,14 +97,8 @@ fn create(
 		}
 	} else if let Ok(root_path) = relative_path.strip_prefix(ROOT_PATH) {
 		std::fs::copy(path, builder.build_path.join(root_path))?;
-	} else if let Ok(_image_path) = relative_path.strip_prefix(crate::images::IMAGES_PATH) {
-		// HACK: this could get very inefficient with a larger number of images. should definitely optimize
-		builder.reload_images_builder()?;
-		builder.build_images()?;
-	} else if let Ok(_blog_path) = relative_path.strip_prefix(crate::blog::BLOG_PATH) {
-		// HACK: same as above
-		builder.reload_blog_builder()?;
-		builder.build_blog()?;
+	} else if let Ok(resources_path) = relative_path.strip_prefix(RESOURCES_PATH) {
+		build_resources(builder, resources_path)?;
 	}
 
 	Ok(())
@@ -106,14 +127,8 @@ fn remove(builder: &mut SiteBuilder, path: &Path, relative_path: &Path) -> eyre:
 		builder.build_sass().wrap_err("Failed to rebuild Sass")?;
 	} else if let Ok(root_path) = relative_path.strip_prefix(ROOT_PATH) {
 		std::fs::remove_file(builder.build_path.join(root_path))?;
-	} else if let Ok(_image_path) = relative_path.strip_prefix(crate::images::IMAGES_PATH) {
-		// HACK: same as in `create`
-		builder.reload_images_builder()?;
-		builder.build_images()?;
-	} else if let Ok(_blog_path) = relative_path.strip_prefix(crate::blog::BLOG_PATH) {
-		// HACK: same as above
-		builder.reload_blog_builder()?;
-		builder.build_blog()?;
+	} else if let Ok(resources_path) = relative_path.strip_prefix(RESOURCES_PATH) {
+		build_resources(builder, resources_path)?;
 	}
 
 	Ok(())
@@ -141,9 +156,8 @@ impl Site {
 		}
 		builder.build_sass().wrap_err("Failed to build Sass")?;
 		builder
-			.build_images()
-			.wrap_err("Failed to build image pages")?;
-		builder.build_blog().wrap_err("Failed to build blog")?;
+			.build_all_resources()
+			.wrap_err("Failed to build resources")?;
 
 		// Map of websocket connections
 		let peers: Arc<Mutex<HashMap<SocketAddr, WebSocket>>> =

@@ -1,7 +1,7 @@
 use lol_html::{element, RewriteStrSettings};
 use serde::Serialize;
 
-use crate::{blog::BlogPostMetadata, builder::SiteBuilder, resource::ResourceTemplateData};
+use crate::{builder::SiteBuilder, resource::ResourceTemplateData};
 
 #[derive(Debug)]
 pub enum Extra {
@@ -31,6 +31,7 @@ pub fn get_extra(extra: &str) -> Option<Extra> {
 	}
 }
 
+/// Extra to append a tempalte to the page.
 fn append_to(page: &str, content: &str, selector: &str) -> eyre::Result<String> {
 	Ok(lol_html::rewrite_str(
 		page,
@@ -48,22 +49,22 @@ fn append_to(page: &str, content: &str, selector: &str) -> eyre::Result<String> 
 fn index(page: String, builder: &SiteBuilder) -> eyre::Result<String> {
 	#[derive(Debug, Serialize)]
 	struct SidebarTemplateData<'r> {
-		// resources: Vec<&'r ResourceMetadata<BlogPostMetadata>>,
-		resources: Vec<ResourceTemplateData<'r, BlogPostMetadata, ()>>,
+		resources: Vec<ResourceTemplateData<'r>>,
 	}
 
 	let sidebar = builder.reg.render(
 		"extras/index-injection",
 		&SidebarTemplateData {
 			resources: builder
-				.blog_builder
+				.resource_builders
+				.get("blog")
+				.expect("missing blog builder")
 				.loaded_metadata
 				.iter()
 				.take(3)
 				.map(|(id, v)| ResourceTemplateData {
 					resource: v,
 					id: id.clone(),
-					extra: (),
 					timestamp: v.timestamp,
 				})
 				.collect(),

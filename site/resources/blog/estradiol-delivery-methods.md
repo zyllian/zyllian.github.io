@@ -3,7 +3,7 @@ title: estradiol delivery methods
 timestamp: 2023-11-12T20:55:00.00Z
 tags: [trans, hrt, estradiol]
 desc: a comparison of the four forms of estradiol i've taken since starting hrt
-header_image_file: 2023/11/syringe.jpeg
+cdn_file: 2023/11/syringe.jpeg
 header_image_alt: A photograph of a syringe for instramuscular injection with needle still in its wrapper.
 ---
 

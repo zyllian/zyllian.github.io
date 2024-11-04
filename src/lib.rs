@@ -1,7 +1,5 @@
-mod blog;
 mod builder;
 mod extras;
-mod images;
 mod link_list;
 mod resource;
 #[cfg(feature = "serve")]
@@ -15,7 +13,7 @@ use std::{
 
 use eyre::Context;
 use rayon::prelude::*;
-use resource::EmbedMetadata;
+use resource::{EmbedMetadata, ResourceBuilderConfig};
 use serde::Deserialize;
 use url::Url;
 use util::get_name;
@@ -41,20 +39,16 @@ pub struct SiteConfig {
 	pub build: Option<String>,
 	/// A list of Sass stylesheets that will be built.
 	pub sass_styles: Vec<PathBuf>,
-	/// The number of images to display on a single page of an image list.
-	pub images_per_page: usize,
-	/// The number of blog posts to display on a single page of a post list.
-	pub blog_posts_per_page: usize,
 	/// URL to the CDN used for the site's images.
 	pub cdn_url: Url,
-	/// Prefix applied to all files uploaded to the site's S3 space.
-	pub s3_prefix: String,
+	/// List of resources the site should build.
+	pub resources: HashMap<String, ResourceBuilderConfig>,
 }
 
 impl SiteConfig {
 	/// Gets a CDN url from the given file name.
 	pub fn cdn_url(&self, file: &str) -> eyre::Result<Url> {
-		Ok(self.cdn_url.join(&self.s3_prefix)?.join(file)?)
+		Ok(self.cdn_url.join(file)?)
 	}
 }
 
@@ -155,8 +149,12 @@ impl Site {
 
 		builder.site.build_all_pages(&builder)?;
 		builder.build_sass()?;
-		builder.build_images()?;
-		builder.build_blog()?;
+
+		for (_source_path, config) in builder.site.config.resources.iter() {
+			let mut res_builder = resource::ResourceBuilder::new(config.clone());
+			res_builder.load_all(&builder)?;
+			res_builder.build_all(&builder)?;
+		}
 
 		Ok(())
 	}

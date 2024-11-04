@@ -3,7 +3,7 @@ title: so now i have a blog
 timestamp: 2023-06-09T22:20:00.00Z
 tags: [meta, blog]
 desc: I added a blog to my site. Here's a picture of some smoke.
-header_image_file: 2023/06/smoke.jpeg
+cdn_file: 2023/06/smoke.jpeg
 header_image_alt: Photo of smoke engulfing an interstate from a highway across a river.
 ---
 

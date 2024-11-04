@@ -1,6 +1,5 @@
 use std::{
 	collections::BTreeMap,
-	marker::PhantomData,
 	path::{Path, PathBuf},
 };
 
@@ -8,14 +7,17 @@ use eyre::Context;
 use itertools::Itertools;
 use pulldown_cmark::{Options, Parser};
 use rss::{validation::Validate, ChannelBuilder, ItemBuilder};
-use serde::{de::DeserializeOwned, Deserialize, Serialize, Serializer};
+use serde::{Deserialize, Serialize, Serializer};
 use time::{format_description::well_known::Rfc2822, OffsetDateTime};
 
-use crate::{builder::SiteBuilder, link_list::Link, PageMetadata, SiteConfig};
+use crate::{builder::SiteBuilder, link_list::Link, PageMetadata};
+
+/// Source base path for resources.
+pub const RESOURCES_PATH: &str = "resources";
 
 /// Metadata for resources.
 #[derive(Debug, Deserialize, Serialize)]
-pub struct ResourceMetadata<T> {
+pub struct ResourceMetadata {
 	/// The resource's title.
 	pub title: String,
 	/// The resource's timestamp.
@@ -23,9 +25,13 @@ pub struct ResourceMetadata<T> {
 	pub timestamp: OffsetDateTime,
 	/// The resource's tags.
 	pub tags: Vec<String>,
+	/// Special field that gets transformed to the full CDN URL for the given path.
+	pub cdn_file: Option<String>,
+	/// The resource's description, if any.
+	pub desc: Option<String>,
 	/// Extra resource data not included.
 	#[serde(flatten)]
-	pub inner: T,
+	pub inner: serde_yml::Value,
 	/// Whether the resource is a draft. Drafts can be committed without being published to the live site.
 	#[serde(default)]
 	pub draft: bool,
@@ -35,21 +41,18 @@ pub struct ResourceMetadata<T> {
 }
 
 #[derive(Debug, Serialize)]
-pub struct ResourceTemplateData<'r, M, E> {
+pub struct ResourceTemplateData<'r> {
 	/// The resource's metadata.
 	#[serde(flatten)]
-	pub resource: &'r ResourceMetadata<M>,
+	pub resource: &'r ResourceMetadata,
 	/// The resource's ID.
 	pub id: String,
-	/// Extra data to be passed to the template.
-	#[serde(flatten)]
-	pub extra: E,
 	/// The resource's timestamp. Duplicated to change serialization method.
-	#[serde(serialize_with = "ResourceTemplateData::<M, E>::timestamp_formatter")]
+	#[serde(serialize_with = "ResourceTemplateData::timestamp_formatter")]
 	pub timestamp: OffsetDateTime,
 }
 
-impl<'r, M, E> ResourceTemplateData<'r, M, E> {
+impl<'r> ResourceTemplateData<'r> {
 	fn timestamp_formatter<S>(timestamp: &OffsetDateTime, serializer: S) -> Result<S::Ok, S::Error>
 	where
 		S: Serializer,
@@ -61,20 +64,6 @@ impl<'r, M, E> ResourceTemplateData<'r, M, E> {
 			)
 			.expect("Should never fail");
 		serializer.serialize_str(&out)
-	}
-}
-
-/// Trait for getting extra template data from resource metadata.
-pub trait ResourceMethods<E>
-where
-	E: Serialize,
-{
-	fn get_short_desc(&self) -> String;
-
-	fn get_extra_resource_template_data(&self, site_config: &SiteConfig) -> eyre::Result<E>;
-
-	fn get_head_data(&self, _site_config: &SiteConfig) -> eyre::Result<String> {
-		Ok(String::new())
 	}
 }
 
@@ -130,8 +119,8 @@ impl EmbedMetadata {
 }
 
 #[derive(Debug, Serialize)]
-struct ResourceListTemplateData<'r, M, E> {
-	resources: Vec<&'r ResourceTemplateData<'r, M, E>>,
+struct ResourceListTemplateData<'r> {
+	resources: Vec<&'r ResourceTemplateData<'r>>,
 	tag: Option<&'r str>,
 	page: usize,
 	page_max: usize,
@@ -145,7 +134,7 @@ struct ExtraResourceRenderData {
 }
 
 /// Config for the resource builder.
-#[derive(Debug, Default)]
+#[derive(Debug, Clone, Default, Deserialize)]
 pub struct ResourceBuilderConfig {
 	/// Path to where the resources should be loaded from.
 	pub source_path: String,
@@ -174,27 +163,20 @@ pub struct ResourceBuilderConfig {
 }
 
 /// Helper to genericize resource building.
-#[derive(Debug)]
-pub struct ResourceBuilder<M, E> {
+#[derive(Debug, Default)]
+pub struct ResourceBuilder {
 	/// The builder's config.
 	pub config: ResourceBuilderConfig,
 	/// The currently loaded resource metadata.
-	pub loaded_metadata: Vec<(String, ResourceMetadata<M>)>,
-	_extra: PhantomData<E>,
+	pub loaded_metadata: Vec<(String, ResourceMetadata)>,
 }
 
-impl<M, E> ResourceBuilder<M, E>
-where
-	M: Serialize + DeserializeOwned,
-	E: Serialize,
-	ResourceMetadata<M>: ResourceMethods<E>,
-{
+impl ResourceBuilder {
 	/// Creates a new resource builder.
 	pub fn new(config: ResourceBuilderConfig) -> Self {
 		Self {
 			config,
 			loaded_metadata: Default::default(),
-			_extra: Default::default(),
 		}
 	}
 
@@ -208,13 +190,13 @@ where
 	}
 
 	/// Loads resource metadata from the given path.
-	fn load(builder: &SiteBuilder, path: &Path) -> eyre::Result<(String, ResourceMetadata<M>)> {
+	fn load(builder: &SiteBuilder, path: &Path) -> eyre::Result<(String, ResourceMetadata)> {
 		let id = Self::get_id(path);
 
 		let input = std::fs::read_to_string(path)?;
 		let mut page = builder
 			.matter
-			.parse_with_struct::<ResourceMetadata<M>>(&input)
+			.parse_with_struct::<ResourceMetadata>(&input)
 			.ok_or_else(|| eyre::anyhow!("Failed to parse resource front matter"))?;
 
 		let parser = Parser::new_ext(&page.content, Options::all());
@@ -222,6 +204,9 @@ where
 		pulldown_cmark::html::push_html(&mut html, parser);
 
 		page.data.content = html;
+		if let Some(cdn_file) = page.data.cdn_file {
+			page.data.cdn_file = Some(builder.site.config.cdn_url(&cdn_file)?.to_string());
+		}
 
 		Ok((id, page.data))
 	}
@@ -233,6 +218,7 @@ where
 		for e in builder
 			.site
 			.site_path
+			.join(RESOURCES_PATH)
 			.join(&self.config.source_path)
 			.read_dir()?
 		{
@@ -262,13 +248,12 @@ where
 		&self,
 		builder: &SiteBuilder,
 		id: String,
-		resource: &ResourceMetadata<M>,
+		resource: &ResourceMetadata,
 	) -> eyre::Result<()> {
 		let out_path = self.build_path(&builder.build_path, &id);
 		let out = {
 			let data = ResourceTemplateData {
 				resource,
-				extra: resource.get_extra_resource_template_data(&builder.site.config)?,
 				id,
 				timestamp: resource.timestamp,
 			};
@@ -282,7 +267,20 @@ where
 			},
 			&out,
 			ExtraResourceRenderData {
-				head: resource.get_head_data(&builder.site.config)?,
+				head: EmbedMetadata {
+					title: resource.title.clone(),
+					site_name: builder.site.config.title.clone(),
+					description: resource.desc.clone(),
+					image: if let Some(cdn_file) = &resource.cdn_file {
+						Some(builder.site.config.cdn_url(cdn_file)?.to_string())
+					} else {
+						None
+					},
+					url: None,
+					theme_color: EmbedMetadata::default_theme_color(),
+					large_image: true,
+				}
+				.build(),
 			},
 		)?;
 		std::fs::write(out_path, out)?;
@@ -309,28 +307,22 @@ where
 
 		let mut data = Vec::with_capacity(lmd.len());
 		for (id, resource) in lmd.iter() {
-			let extra = resource.get_extra_resource_template_data(&builder.site.config)?;
 			data.push(ResourceTemplateData {
 				resource,
-				extra,
 				id: id.clone(),
 				timestamp: resource.timestamp,
 			});
 		}
 
-		fn build_list<M, E>(
+		fn build_list(
 			builder: &SiteBuilder,
 			config: &ResourceBuilderConfig,
-			list: Vec<&ResourceTemplateData<M, E>>,
+			list: Vec<&ResourceTemplateData>,
 			title: &str,
 			tag: Option<&str>,
 			out_path: &Path,
 			items_per_page: usize,
-		) -> eyre::Result<()>
-		where
-			M: Serialize,
-			E: Serialize,
-		{
+		) -> eyre::Result<()> {
 			if !out_path.exists() {
 				std::fs::create_dir_all(out_path)?;
 			}
@@ -381,7 +373,7 @@ where
 		)?;
 
 		// Build resource lists by tag
-		let mut tags: BTreeMap<String, Vec<&ResourceTemplateData<M, E>>> = BTreeMap::new();
+		let mut tags: BTreeMap<String, Vec<&ResourceTemplateData>> = BTreeMap::new();
 		for resource in &data {
 			for tag in resource.resource.tags.iter().cloned() {
 				tags.entry(tag).or_default().push(resource);
@@ -442,7 +434,7 @@ where
 							))?
 							.to_string(),
 					))
-					.description(Some(resource.resource.get_short_desc()))
+					.description(resource.resource.desc.clone())
 					.pub_date(Some(resource.timestamp.format(&Rfc2822)?))
 					.content(Some(
 						builder.reg.render(&self.config.rss_template, &resource)?,
@@ -470,15 +462,5 @@ where
 		std::fs::write(out_long.join("rss.xml"), out)?;
 
 		Ok(())
-	}
-}
-
-impl<M, E> Default for ResourceBuilder<M, E> {
-	fn default() -> Self {
-		Self {
-			config: Default::default(),
-			loaded_metadata: Default::default(),
-			_extra: Default::default(),
-		}
 	}
 }

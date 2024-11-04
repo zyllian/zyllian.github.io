@@ -1,6 +1,6 @@
 //! Module containing the site builder.
 
-use std::path::PathBuf;
+use std::{collections::HashMap, path::PathBuf};
 
 use eyre::{eyre, Context, OptionExt};
 use gray_matter::{engine::YAML, Matter};
@@ -43,12 +43,8 @@ pub struct SiteBuilder<'a> {
 	/// Whether the site is going to be served locally with the dev server.
 	serving: bool,
 
-	/// Resource builder for the site's images section.
-	pub images_builder:
-		ResourceBuilder<crate::images::ImageMetadata, crate::images::ImageTemplateData>,
-	/// Resource builder for the site's blog section.
-	pub blog_builder:
-		ResourceBuilder<crate::blog::BlogPostMetadata, crate::blog::BlogPostTemplateData>,
+	/// The resource builders available to the builder.
+	pub resource_builders: HashMap<String, ResourceBuilder>,
 }
 
 impl<'a> SiteBuilder<'a> {
@@ -65,8 +61,7 @@ impl<'a> SiteBuilder<'a> {
 		Self {
 			matter: Matter::new(),
 			reg: Handlebars::new(),
-			images_builder: ResourceBuilder::new(crate::images::get_images_resource_config(&site)),
-			blog_builder: ResourceBuilder::new(crate::blog::get_blog_resource_config(&site)),
+			resource_builders: HashMap::new(),
 			site,
 			build_path,
 			serving,
@@ -112,34 +107,35 @@ impl<'a> SiteBuilder<'a> {
 			}
 		}
 
-		let images_path = self.build_path.join(crate::images::IMAGES_OUT_PATH);
-		if !images_path.exists() {
-			std::fs::create_dir(images_path).wrap_err("Failed to create images path")?;
-		}
-
-		self.reload_images_builder()?;
-		self.reload_blog_builder()?;
+		self.reload()?;
 
 		Ok(self)
 	}
 
-	/// Reloads the images builder's metadata.
-	pub fn reload_images_builder(&mut self) -> eyre::Result<()> {
-		let mut images_builder = std::mem::take(&mut self.images_builder);
-		images_builder
-			.load_all(self)
-			.wrap_err("Failed to load images metadata")?;
-		self.images_builder = images_builder;
+	/// Performs actions that need to be done when the config changes while serving.
+	pub fn reload(&mut self) -> eyre::Result<()> {
+		self.resource_builders.clear();
+		for (prefix, config) in &self.site.config.resources {
+			self.resource_builders
+				.insert(prefix.to_owned(), ResourceBuilder::new(config.clone()));
+		}
+
+		for prefix in self.resource_builders.keys().cloned().collect::<Vec<_>>() {
+			self.reload_resource_builder(&prefix)?;
+		}
+
 		Ok(())
 	}
 
-	/// Reloads the blog builder's metadata.
-	pub fn reload_blog_builder(&mut self) -> eyre::Result<()> {
-		let mut blog_builder = std::mem::take(&mut self.blog_builder);
-		blog_builder
-			.load_all(self)
-			.wrap_err("Failed to load blog metadata")?;
-		self.blog_builder = blog_builder;
+	/// Reloads a particular resource builder's metadata.
+	pub fn reload_resource_builder(&mut self, builder: &str) -> eyre::Result<()> {
+		let mut resource_builder = self
+			.resource_builders
+			.remove(builder)
+			.ok_or_else(|| eyre!("missing resource builder: {builder}"))?;
+		resource_builder.load_all(self)?;
+		self.resource_builders
+			.insert(builder.to_string(), resource_builder);
 		Ok(())
 	}
 
@@ -384,13 +380,19 @@ impl<'a> SiteBuilder<'a> {
 		Ok(())
 	}
 
-	/// Builds the site's various image pages.
-	pub fn build_images(&self) -> eyre::Result<()> {
-		self.images_builder.build_all(self)
+	/// Builds all resource types.
+	pub fn build_all_resources(&self) -> eyre::Result<()> {
+		for builder in self.resource_builders.values() {
+			builder.build_all(self)?;
+		}
+		Ok(())
 	}
 
-	/// Builds the site's blog.
-	pub fn build_blog(&self) -> eyre::Result<()> {
-		self.blog_builder.build_all(self)
+	/// Builds a resource type from the site.
+	pub fn build_resources(&self, resource: &str) -> eyre::Result<()> {
+		self.resource_builders
+			.get(resource)
+			.ok_or_else(|| eyre!("missing resource: {resource}"))?
+			.build_all(self)
 	}
 }
