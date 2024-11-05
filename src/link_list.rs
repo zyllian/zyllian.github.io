@@ -25,14 +25,14 @@ impl<'l> Link<'l> {
 /// Renders a basic list of links.
 pub fn render_basic_link_list(
 	builder: &SiteBuilder,
+	template: &str,
 	links: Vec<Link>,
 	title: &str,
 ) -> eyre::Result<String> {
 	let data = LinkTemplateData { links, title };
-	let out = builder.tera.render(
-		"basic-link-list.tera",
-		&tera::Context::from_serialize(data)?,
-	)?;
+	let out = builder
+		.tera
+		.render(template, &tera::Context::from_serialize(data)?)?;
 	let out = builder.build_page_raw(
 		PageMetadata {
 			title: Some(title.to_owned()),

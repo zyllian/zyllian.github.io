@@ -146,6 +146,8 @@ pub struct ResourceBuilderConfig {
 	pub resource_template: String,
 	/// The template used to render a list of resources.
 	pub resource_list_template: String,
+	/// The template used to render the resource's tag pages.
+	pub tag_list_template: String,
 	/// Template used when rendering the RSS feed.
 	pub rss_template: String,
 	/// The RSS feed's title.
@@ -406,6 +408,7 @@ impl ResourceBuilder {
 				.collect();
 			let out = crate::link_list::render_basic_link_list(
 				builder,
+				&self.config.tag_list_template,
 				links,
 				&self.config.tag_list_title,
 			)?;

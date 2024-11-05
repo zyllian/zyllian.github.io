@@ -11,6 +11,7 @@ resources:
     output_path_long: blog
     resource_template: blog-post.tera
     resource_list_template: blog-list.tera
+    tag_list_template: basic-link-list.tera
     rss_template: rss/blog-post.tera
     rss_title: zyl's blog
     rss_description: feed of recent blog posts on zyl's website.
@@ -24,6 +25,7 @@ resources:
     output_path_long: images
     resource_template: image.tera
     resource_list_template: images.tera
+    tag_list_template: basic-link-list.tera
     rss_template: rss/image.tera
     rss_title: zyl's images
     rss_description: feed of newly uploaded images from zyl's website.
