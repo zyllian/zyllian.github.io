@@ -1,22 +1,22 @@
 <div class="blog-post">
 	<h1 class="title">{{title}}</h1>
 	<span class="timestamp">published {{timestamp}}</span>
-	{{#if draft}}
+	{% if draft %}
 	<h2>DRAFT</h2>
-	{{/if}}
+	{% endif %}
 	<div class="header-image-wrapper">
 		<p class="short-desc">{{desc}}</p>
 		<img class="header-image" src="{{cdn_file}}" alt="{{header_image_alt}}"
 			style="object-fit: cover; object-position: 50% 50%">
 	</div>
 	<div class="content">
-		{{{content}}}
+		{{ content | safe }}
 	</div>
 	<hr />
 	<h3 class="tags-title">tags</h3>
 	<div class="post-tags">
-		{{#each tags}}
-		<a class="tag" href="/blog/tag/{{this}}">{{this}}</a>{{#unless @last}},{{/unless}}
-		{{/each}}
+		{% for tag in tags %}
+		<a class="tag" href="/blog/tag/{{tag}}">{{tag}}</a>{% if not loop.last %},{% endif %}
+		{% endfor %}
 	</div>
 </div>

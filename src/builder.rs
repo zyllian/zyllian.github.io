@@ -3,10 +3,10 @@
 use std::{collections::HashMap, path::PathBuf};
 
 use eyre::{eyre, Context, OptionExt};
-use handlebars::Handlebars;
 use lol_html::{element, html_content::ContentType, HtmlRewriter, Settings};
 use pulldown_cmark::{Options, Parser};
 use serde::Serialize;
+use tera::Tera;
 use url::Url;
 
 use crate::{resource::ResourceBuilder, util, PageMetadata, Site, ROOT_PATH, SASS_PATH};
@@ -30,9 +30,9 @@ struct TemplateData<'a, T> {
 }
 
 /// Struct used to build the site.
-pub struct SiteBuilder<'a> {
+pub struct SiteBuilder {
 	/// The Handlebars registry used to render templates.
-	pub(crate) reg: Handlebars<'a>,
+	pub(crate) tera: Tera,
 	/// The site info used to build the site.
 	pub site: Site,
 	/// The path to the build directory.
@@ -44,7 +44,7 @@ pub struct SiteBuilder<'a> {
 	pub resource_builders: HashMap<String, ResourceBuilder>,
 }
 
-impl<'a> SiteBuilder<'a> {
+impl SiteBuilder {
 	/// Creates a new site builder.
 	pub fn new(site: Site, serving: bool) -> Self {
 		let mut build_path = match &site.config.build {
@@ -55,8 +55,17 @@ impl<'a> SiteBuilder<'a> {
 			build_path = site.site_path.join("build");
 		}
 
+		let mut tera = Tera::new(
+			site.site_path
+				.join("templates/**/*.tera")
+				.to_str()
+				.expect("failed to convert path to string"),
+		)
+		.expect("failed to create tera instance");
+		tera.autoescape_on(vec![".tera"]);
+
 		Self {
-			reg: Handlebars::new(),
+			tera,
 			resource_builders: HashMap::new(),
 			site,
 			build_path,
@@ -66,6 +75,7 @@ impl<'a> SiteBuilder<'a> {
 
 	/// Prepares the site builder for use and sets up the build directory.
 	pub fn prepare(mut self) -> eyre::Result<Self> {
+		self.tera.full_reload()?;
 		if self.build_path.exists() {
 			for entry in self.build_path.read_dir()? {
 				let path = &entry?.path();
@@ -80,12 +90,6 @@ impl<'a> SiteBuilder<'a> {
 			}
 		} else {
 			std::fs::create_dir(&self.build_path).wrap_err("Failed to create build directory")?;
-		}
-
-		for (template_name, template_path) in &self.site.template_index {
-			self.reg
-				.register_template_file(template_name, template_path)
-				.wrap_err("Failed to register template file")?;
 		}
 
 		let root_path = self.site.site_path.join(ROOT_PATH);
@@ -272,16 +276,18 @@ impl<'a> SiteBuilder<'a> {
 			embed.build()
 		});
 
-		let out = self.reg.render(
-			&page_metadata.template.unwrap_or_else(|| "base".to_string()),
-			&TemplateData {
+		let out = self.tera.render(
+			&page_metadata
+				.template
+				.unwrap_or_else(|| "base.tera".to_string()),
+			&tera::Context::from_serialize(TemplateData {
 				page: page_html,
 				title: &title,
 				head,
 				scripts: &page_metadata.scripts,
 				styles: &page_metadata.styles,
 				extra_data,
-			},
+			})?,
 		)?;
 
 		// Modify HTML output

@@ -1,3 +1,7 @@
+{% macro badge(badge, url, alt) %}
+<a href="{{url}}"><img src="/badges/{{badge}}" alt="{{alt}}"></a>
+{% endmacro badge %}
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -5,15 +9,15 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<meta name="referrer" content="no-referrer">
 	<link rel="stylesheet" href="/styles/index.css">
-	<title>{{title}}</title>
+	<title>{{ title }}</title>
 	<script type="text/javascript" src="/js/pet-me.js" defer></script>
-	{{{head}}}
-	{{#each scripts}}
-	<script type="text/javascript" src="{{this}}" defer></script>
-	{{/each}}
-	{{#each styles}}
-	<link rel="stylesheet" href="/styles/{{this}}">
-	{{/each}}
+	{{ head | safe }}
+	{% for script in scripts %}
+	<script type="text/javascript" src="{{script}}" defer></script>
+	{% endfor %}
+	{% for style in styles %}
+	<link rel="stylesheet" href="/styles/{{style}}">
+	{% endfor %}
 </head>
 
 <body>
@@ -32,7 +36,7 @@
 	</header>
 	<div id="content">
 		<main class="page">
-			{{{page}}}
+			{% block content %}{{ page | safe }}{% endblock content %}
 		</main>
 	</div>
 
@@ -42,10 +46,7 @@
 		bark bark awruff :3
 
 		<div class="badges">
-			{{#*inline "badge"}}
-			<a href="{{url}}"><img src="/badges/{{badge}}" alt="{{alt}}"></a>
-			{{/inline}}
-			{{> badge badge="transbian.png" url="https://badge.les.bi" alt="transgender and lesbian flags"}}
+			{{ self::badge(badge="transbian.png", url="https://badge.les.bi", alt="transgender and lesbian flags") }}
 		</div>
 	</footer>
 

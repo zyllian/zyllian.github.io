@@ -79,9 +79,8 @@ fn create(
 		if build {
 			builder.build_page(&page_name_str)?;
 		}
-	} else if let Ok(template_path) = relative_path.strip_prefix(TEMPLATES_PATH) {
-		let (_template_name, template_name_str) = get_name(template_path);
-		builder.refresh_template(&template_name_str, path)?;
+	} else if let Ok(_template_path) = relative_path.strip_prefix(TEMPLATES_PATH) {
+		builder.tera.full_reload()?;
 		if build {
 			builder.site.build_all_pages(builder)?;
 			builder.build_all_resources()?;
@@ -118,7 +117,7 @@ fn remove(builder: &mut SiteBuilder, path: &Path, relative_path: &Path) -> eyre:
 	} else if let Ok(template_path) = relative_path.strip_prefix(TEMPLATES_PATH) {
 		let (_template_name, template_name_str) = get_name(template_path);
 		builder.site.template_index.remove(&template_name_str);
-		builder.reg.unregister_template(&template_name_str);
+		builder.tera.full_reload()?;
 		builder
 			.site
 			.build_all_pages(builder)
@@ -320,20 +319,6 @@ impl Site {
 
 		println!("Starting server at http://{}", addr);
 		warp::serve(routes).run(addr).await;
-
-		Ok(())
-	}
-}
-
-impl<'a> SiteBuilder<'a> {
-	/// Refreshes a template to ensure it's up to date.
-	pub fn refresh_template(
-		&mut self,
-		template_name: &str,
-		template_path: &Path,
-	) -> eyre::Result<()> {
-		self.reg
-			.register_template_file(template_name, template_path)?;
 
 		Ok(())
 	}

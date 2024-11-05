@@ -8,5 +8,5 @@ embed:
   description: click click click
 extra:
   name: basic
-  template: extras/click
+  template: extras/click.tera
 ---

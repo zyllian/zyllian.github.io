@@ -30,7 +30,7 @@ impl Extra {
 		match self {
 			Self::Basic => {
 				let data: BasicData = serde_yml::from_value(data.inner.clone())?;
-				let content = builder.reg.render(&data.template, &())?;
+				let content = builder.tera.render(&data.template, &tera::Context::new())?;
 				append_to(&page, &content, "main.page")
 			}
 			Self::HtmlModification(f) => (f)(page, builder, data),
@@ -91,9 +91,9 @@ fn resource_list_outside(
 
 	let data: ResourceListData = serde_yml::from_value(data.inner.clone())?;
 
-	let resource_list = builder.reg.render(
+	let resource_list = builder.tera.render(
 		&data.template,
-		&ResourceListTemplateData {
+		&tera::Context::from_serialize(ResourceListTemplateData {
 			resources: builder
 				.resource_builders
 				.get(&data.resource)
@@ -107,7 +107,7 @@ fn resource_list_outside(
 					timestamp: v.timestamp,
 				})
 				.collect(),
-		},
+		})?,
 	)?;
 
 	append_to(&page, &resource_list, "#content")

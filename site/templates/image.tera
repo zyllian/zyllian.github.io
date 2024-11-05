@@ -2,12 +2,12 @@
 	<h1 class="title">{{title}}</h1>
 	<span class="timestamp">published {{timestamp}}</span>
 	<img class="image-actual" src="{{cdn_file}}" alt="{{alt}}">
-	{{{content}}}
+	{{ content | safe }}
 	<p><a href="{{cdn_file}}">view full size image</a></p>
 	<h3 class="tags-title">tags</h3>
 	<div class="image-tags">
-		{{#each tags}}
-		<a class="tag" href="/i/tag/{{this}}/">{{this}}</a>{{#unless @last}},{{/unless}}
-		{{/each}}
+		{% for tag in tags %}
+		<a class="tag" href="/i/tag/{{tag}}/">{{tag}}</a>{% if not loop.last %},{% endif %}
+		{% endfor %}
 	</div>
 </div>

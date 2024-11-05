@@ -258,7 +258,10 @@ impl ResourceBuilder {
 				id,
 				timestamp: resource.timestamp,
 			};
-			builder.reg.render(&self.config.resource_template, &data)?
+			builder.tera.render(
+				&self.config.resource_template,
+				&tera::Context::from_serialize(data)?,
+			)?
 		};
 
 		let out = builder.build_page_raw_with_extra_data(
@@ -341,7 +344,10 @@ impl ResourceBuilder {
 					previous,
 					next,
 				};
-				let out = builder.reg.render(&config.resource_list_template, &data)?;
+				let out = builder.tera.render(
+					&config.resource_list_template,
+					&tera::Context::from_serialize(data)?,
+				)?;
 				let out = builder.build_page_raw(
 					PageMetadata {
 						title: Some(title.to_owned()),
@@ -437,9 +443,10 @@ impl ResourceBuilder {
 					))
 					.description(resource.resource.desc.clone())
 					.pub_date(Some(resource.timestamp.format(&Rfc2822)?))
-					.content(Some(
-						builder.reg.render(&self.config.rss_template, &resource)?,
-					))
+					.content(Some(builder.tera.render(
+						&self.config.rss_template,
+						&tera::Context::from_serialize(resource)?,
+					)?))
 					.build(),
 			)
 		}

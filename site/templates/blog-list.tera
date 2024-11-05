@@ -1,24 +1,24 @@
-{{#if tag}}
+{% if tag %}
 <h1>blog posts tagged {{tag}}</h1>
 <p><a href="/blog/">View all blog posts</a></p>
-{{else}}
+{% else %}
 <h1>blog Posts</h1>
 <p><a href="tags">view blog tags</a></p>
 <p><a href="rss.xml">rss feed</a></p>
-{{/if}}
+{% endif %}
 <h1>Page {{page}}/{{page_max}}</h1>
-{{#if previous}}
+{% if previous %}
 <a href="./{{previous}}">previous page</a>
-{{/if}}
-{{#if next}}
+{% endif %}
+{% if next %}
 <a href="./{{next}}">next page</a>
-{{/if}}
+{% endif %}
 <div class="blog-post-list">
-	{{#each resources}}
+	{% for resource in resources %}
 	<div class="post">
-		<p class="title"><a href="/blog/{{id}}">{{title}}</a></p>
-		<p class="timestamp">{{timestamp}}</p>
-		<p class="short-desc">{{desc}}</p>
+		<p class="title"><a href="/blog/{{resource.id}}">{{resource.title}}</a></p>
+		<p class="timestamp">{{resource.timestamp}}</p>
+		<p class="short-desc">{{resource.desc}}</p>
 	</div>
-	{{/each}}
+	{% endfor %}
 </div>

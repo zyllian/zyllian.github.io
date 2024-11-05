@@ -10,7 +10,6 @@ eyre = "0.6"
 fs_extra = "1.2"
 futures = {version = "0.3", optional = true}
 grass = {version = "0.13", default-features = false}
-handlebars = "6"
 hotwatch = {version = "0.5", optional = true}
 itertools = "0.13"
 lol_html = "2"
@@ -24,6 +23,7 @@ rayon = "1"
 rss = {version = "2", features = ["validation"]}
 serde = {version = "1", features = ["derive"]}
 serde_yml = "0.0.12"
+tera = "1"
 time = {version = "0.3", features = ["serde-human-readable"]}
 tokio = {version = "1.10", features = [
   "macros",

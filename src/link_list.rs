@@ -29,7 +29,10 @@ pub fn render_basic_link_list(
 	title: &str,
 ) -> eyre::Result<String> {
 	let data = LinkTemplateData { links, title };
-	let out = builder.reg.render("basic-link-list", &data)?;
+	let out = builder.tera.render(
+		"basic-link-list.tera",
+		&tera::Context::from_serialize(data)?,
+	)?;
 	let out = builder.build_page_raw(
 		PageMetadata {
 			title: Some(title.to_owned()),

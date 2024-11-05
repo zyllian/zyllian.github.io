@@ -1,7 +1,7 @@
 ---
 extra:
   name: resource-list-outside
-  template: extras/index-injection
+  template: extras/index-injection.tera
   resource: blog
   count: 3
 ---
