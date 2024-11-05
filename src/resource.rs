@@ -10,7 +10,7 @@ use rss::{validation::Validate, ChannelBuilder, ItemBuilder};
 use serde::{Deserialize, Serialize, Serializer};
 use time::{format_description::well_known::Rfc2822, OffsetDateTime};
 
-use crate::{builder::SiteBuilder, link_list::Link, PageMetadata};
+use crate::{builder::SiteBuilder, frontmatter::FrontMatter, link_list::Link, PageMetadata};
 
 /// Source base path for resources.
 pub const RESOURCES_PATH: &str = "resources";
@@ -194,21 +194,22 @@ impl ResourceBuilder {
 		let id = Self::get_id(path);
 
 		let input = std::fs::read_to_string(path)?;
-		let mut page = builder
-			.matter
-			.parse_with_struct::<ResourceMetadata>(&input)
-			.ok_or_else(|| eyre::anyhow!("Failed to parse resource front matter"))?;
+		let page = FrontMatter::<ResourceMetadata>::parse(input)
+			.wrap_err_with(|| eyre::eyre!("Failed to parse resource front matter"))?;
 
 		let parser = Parser::new_ext(&page.content, Options::all());
 		let mut html = String::new();
 		pulldown_cmark::html::push_html(&mut html, parser);
 
-		page.data.content = html;
-		if let Some(cdn_file) = page.data.cdn_file {
-			page.data.cdn_file = Some(builder.site.config.cdn_url(&cdn_file)?.to_string());
+		let mut data = page
+			.data
+			.ok_or_else(|| eyre::eyre!("missing front matter for file at {path:?}"))?;
+		data.content = html;
+		if let Some(cdn_file) = data.cdn_file {
+			data.cdn_file = Some(builder.site.config.cdn_url(&cdn_file)?.to_string());
 		}
 
-		Ok((id, page.data))
+		Ok((id, data))
 	}
 
 	/// Loads all resource metadata from the given config.

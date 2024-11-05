@@ -3,7 +3,6 @@
 use std::{collections::HashMap, path::PathBuf};
 
 use eyre::{eyre, Context, OptionExt};
-use gray_matter::{engine::YAML, Matter};
 use handlebars::Handlebars;
 use lol_html::{element, html_content::ContentType, HtmlRewriter, Settings};
 use pulldown_cmark::{Options, Parser};
@@ -32,8 +31,6 @@ struct TemplateData<'a, T> {
 
 /// Struct used to build the site.
 pub struct SiteBuilder<'a> {
-	/// The matter instance used to extract front matter.
-	pub(crate) matter: Matter<YAML>,
 	/// The Handlebars registry used to render templates.
 	pub(crate) reg: Handlebars<'a>,
 	/// The site info used to build the site.
@@ -59,7 +56,6 @@ impl<'a> SiteBuilder<'a> {
 		}
 
 		Self {
-			matter: Matter::new(),
 			reg: Handlebars::new(),
 			resource_builders: HashMap::new(),
 			site,
@@ -257,16 +253,14 @@ impl<'a> SiteBuilder<'a> {
 	/// Helper to build a page without writing it to disk.
 	pub fn build_page_raw_with_extra_data<T>(
 		&self,
-		page_metadata: PageMetadata,
+		mut page_metadata: PageMetadata,
 		page_html: &str,
 		extra_data: T,
 	) -> eyre::Result<String>
 	where
 		T: Serialize,
 	{
-		let extra = page_metadata
-			.extra
-			.and_then(|extra| crate::extras::get_extra(&extra));
+		let extra = page_metadata.extra.take();
 
 		let title = match &page_metadata.title {
 			Some(page_title) => format!("{} / {}", self.site.config.title, page_title),
@@ -293,8 +287,10 @@ impl<'a> SiteBuilder<'a> {
 		// Modify HTML output
 		let mut out = self.rewrite_html(out)?;
 
-		if let Some(extra) = extra {
-			out = extra.handle(out, self)?;
+		if let Some(data) = extra {
+			if let Some(extra) = crate::extras::get_extra(&data.name) {
+				out = extra.handle(out, self, &data)?;
+			}
 		}
 
 		if !self.serving {
@@ -310,19 +306,13 @@ impl<'a> SiteBuilder<'a> {
 
 		let input = std::fs::read_to_string(page_path)
 			.with_context(|| format!("Failed to read page at {}", page_path.display()))?;
-		let page = self.matter.parse(&input);
-
-		let page_metadata = if let Some(data) = page.data {
-			data.deserialize()?
-		} else {
-			PageMetadata::default()
-		};
+		let page = crate::frontmatter::FrontMatter::parse(input)?;
 
 		let parser = Parser::new_ext(&page.content, Options::all());
 		let mut page_html = String::new();
 		pulldown_cmark::html::push_html(&mut page_html, parser);
 
-		let out = self.build_page_raw(page_metadata, &page_html)?;
+		let out = self.build_page_raw(page.data.unwrap_or_default(), &page_html)?;
 
 		let out_path = self.build_path.join(page_name).with_extension("html");
 		std::fs::create_dir_all(out_path.parent().unwrap())

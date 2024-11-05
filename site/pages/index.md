@@ -1,5 +1,9 @@
 ---
-extra: index
+extra:
+  name: resource-list-outside
+  template: extras/index-injection
+  resource: blog
+  count: 3
 ---
 
 # zyl is gay

@@ -10,7 +10,6 @@ eyre = "0.6"
 fs_extra = "1.2"
 futures = {version = "0.3", optional = true}
 grass = {version = "0.13", default-features = false}
-gray_matter = "0.2"
 handlebars = "6"
 hotwatch = {version = "0.5", optional = true}
 itertools = "0.13"

@@ -6,5 +6,7 @@ embed:
   title: click
   site_name: zyl.gay
   description: click click click
-extra: click
+extra:
+  name: basic
+  template: extras/click
 ---

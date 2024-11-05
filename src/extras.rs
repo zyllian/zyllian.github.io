@@ -1,32 +1,58 @@
 use lol_html::{element, RewriteStrSettings};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 use crate::{builder::SiteBuilder, resource::ResourceTemplateData};
 
+/// Types of extras.
 #[derive(Debug)]
 pub enum Extra {
-	Basic(&'static str),
-	HtmlModification(fn(page: String, builder: &SiteBuilder) -> eyre::Result<String>),
+	/// Simply appends to the page within content.
+	Basic,
+	/// May modify the HTML output in any way.
+	HtmlModification(
+		fn(page: String, builder: &SiteBuilder, data: &ExtraData) -> eyre::Result<String>,
+	),
 }
 
 impl Extra {
 	/// runs the handler for the extra
-	pub fn handle(&self, page: String, builder: &SiteBuilder) -> eyre::Result<String> {
+	pub fn handle(
+		&self,
+		page: String,
+		builder: &SiteBuilder,
+		data: &ExtraData,
+	) -> eyre::Result<String> {
+		#[derive(Debug, Deserialize)]
+		struct BasicData {
+			template: String,
+		}
+
 		match self {
-			Self::Basic(template) => {
-				let content = builder.reg.render(template, &())?;
+			Self::Basic => {
+				let data: BasicData = serde_yml::from_value(data.inner.clone())?;
+				let content = builder.reg.render(&data.template, &())?;
 				append_to(&page, &content, "main.page")
 			}
-			Self::HtmlModification(f) => (f)(page, builder),
+			Self::HtmlModification(f) => (f)(page, builder, data),
 		}
 	}
+}
+
+/// Data for extras.
+#[derive(Debug, Deserialize)]
+pub struct ExtraData {
+	/// The name of the extra to run.
+	pub name: String,
+	/// The inner data for the extra.
+	#[serde(flatten)]
+	pub inner: serde_yml::Value,
 }
 
 /// Gets the extra for the given value.
 pub fn get_extra(extra: &str) -> Option<Extra> {
 	match extra {
-		"index" => Some(Extra::HtmlModification(index)),
-		"click" => Some(Extra::Basic("extras/click")),
+		"basic" => Some(Extra::Basic),
+		"resource-list-outside" => Some(Extra::HtmlModification(resource_list_outside)),
 		_ => None,
 	}
 }
@@ -46,22 +72,35 @@ fn append_to(page: &str, content: &str, selector: &str) -> eyre::Result<String> 
 }
 
 /// Extra to add a sidebar to the index page with recent blog posts on it.
-fn index(page: String, builder: &SiteBuilder) -> eyre::Result<String> {
+fn resource_list_outside(
+	page: String,
+	builder: &SiteBuilder,
+	data: &ExtraData,
+) -> eyre::Result<String> {
+	#[derive(Debug, Deserialize)]
+	struct ResourceListData {
+		template: String,
+		resource: String,
+		count: usize,
+	}
+
 	#[derive(Debug, Serialize)]
-	struct SidebarTemplateData<'r> {
+	struct ResourceListTemplateData<'r> {
 		resources: Vec<ResourceTemplateData<'r>>,
 	}
 
-	let sidebar = builder.reg.render(
-		"extras/index-injection",
-		&SidebarTemplateData {
+	let data: ResourceListData = serde_yml::from_value(data.inner.clone())?;
+
+	let resource_list = builder.reg.render(
+		&data.template,
+		&ResourceListTemplateData {
 			resources: builder
 				.resource_builders
-				.get("blog")
-				.expect("missing blog builder")
+				.get(&data.resource)
+				.ok_or_else(|| eyre::eyre!("missing resource builder: {}", data.resource))?
 				.loaded_metadata
 				.iter()
-				.take(3)
+				.take(data.count)
 				.map(|(id, v)| ResourceTemplateData {
 					resource: v,
 					id: id.clone(),
@@ -71,5 +110,5 @@ fn index(page: String, builder: &SiteBuilder) -> eyre::Result<String> {
 		},
 	)?;
 
-	append_to(&page, &sidebar, "#content")
+	append_to(&page, &resource_list, "#content")
 }

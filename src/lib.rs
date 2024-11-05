@@ -1,5 +1,6 @@
 mod builder;
 mod extras;
+mod frontmatter;
 mod link_list;
 mod resource;
 #[cfg(feature = "serve")]
@@ -11,6 +12,7 @@ use std::{
 	path::{Path, PathBuf},
 };
 
+use extras::ExtraData;
 use eyre::Context;
 use rayon::prelude::*;
 use resource::{EmbedMetadata, ResourceBuilderConfig};
@@ -73,7 +75,8 @@ pub struct PageMetadata {
 	#[serde(default)]
 	pub styles: Vec<String>,
 	/// The extra stuff to run for the page, if any.
-	pub extra: Option<String>,
+	#[serde(default)]
+	pub extra: Option<ExtraData>,
 }
 
 /// Struct containing information about the site.
