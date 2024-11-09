@@ -1,3 +1,5 @@
+{% extends "base.tera" %}
+{% block content %}
 <div class="image-full">
 	<h1 class="title">{{title}}</h1>
 	<span class="timestamp">published {{timestamp}}</span>
@@ -11,3 +13,4 @@
 		{% endfor %}
 	</div>
 </div>
+{% endblock content %}

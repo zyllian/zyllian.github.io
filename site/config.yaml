@@ -3,16 +3,17 @@ title: zyl is gay
 description: "zyl's website."
 sass_styles: [index.scss, pet.scss, click.scss]
 cdn_url: "https://i.zyl.gay"
+code_theme: base16-ocean.dark
 
 resources:
   blog:
     source_path: blog
     output_path_short: blog
     output_path_long: blog
-    resource_template: blog-post.tera
-    resource_list_template: blog-list.tera
+    resource_template: blog/resource.tera
+    resource_list_template: blog/list.tera
     tag_list_template: basic-link-list.tera
-    rss_template: rss/blog-post.tera
+    rss_template: blog/rss.tera
     rss_title: zyl's blog
     rss_description: feed of recent blog posts on zyl's website.
     list_title: blog
@@ -23,10 +24,10 @@ resources:
     source_path: images
     output_path_short: i
     output_path_long: images
-    resource_template: image.tera
-    resource_list_template: images.tera
+    resource_template: image/resource.tera
+    resource_list_template: image/list.tera
     tag_list_template: basic-link-list.tera
-    rss_template: rss/image.tera
+    rss_template: image/rss.tera
     rss_title: zyl's images
     rss_description: feed of newly uploaded images from zyl's website.
     list_title: images

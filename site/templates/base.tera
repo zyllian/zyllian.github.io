@@ -43,7 +43,7 @@
 	<div class="flex-spacer"></div>
 	<hr />
 	<footer id="footer">
-		bark bark awruff :3
+		bark bark awruff :3 &bullet; powered by <strong><a href="https://webdog.zyl.gay">webdog</a></strong>
 
 		<div class="badges">
 			{{ self::badge(badge="transbian.png", url="https://badge.les.bi", alt="transgender and lesbian flags") }}

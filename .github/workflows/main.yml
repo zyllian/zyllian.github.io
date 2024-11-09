@@ -37,10 +37,14 @@ jobs:
       - uses: actions/checkout@v4
       - uses: Swatinem/rust-cache@v2
 
+      - name: Install webdog
+        run: |
+          cargo install webdog --git https://github.com/zyllian/webdog --no-default-features
+
       # Runs a single command using the runners shell
       - name: Build site
         run: |
-          cargo run --no-default-features --release
+          webdog build --site-path site
 
       - name: Setup Pages
         uses: actions/configure-pages@v5

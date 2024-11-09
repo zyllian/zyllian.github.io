@@ -1,3 +1,5 @@
+{% extends "base.tera" %}
+{% block content %}
 {% if tag %}
 <h1>images tagged {{tag}}</h1>
 <p><a href="/images/">view all images</a></p>
@@ -21,3 +23,4 @@
 	</a>
 	{% endfor %}
 </div>
+{% endblock content %}
