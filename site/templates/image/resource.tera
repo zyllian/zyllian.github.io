@@ -1,14 +1,14 @@
 {% extends "base.tera" %}
 {% block content %}
 <div class="image-full">
-	<h1 class="title">{{title}}</h1>
-	<span class="timestamp">published {{timestamp}}</span>
-	<img class="image-actual" src="{{cdn_file}}" alt="{{alt}}">
-	{{ content | safe }}
-	<p><a href="{{cdn_file}}">view full size image</a></p>
+	<h1 class="title">{{ data.title }}</h1>
+	<span class="timestamp">published {{ data.timestamp }}</span>
+	<img class="image-actual" src="{{data.cdn_file}}" alt="{{data.alt}}">
+	{{ data.content | safe }}
+	<p><a href="{{data.cdn_file}}">view full size image</a></p>
 	<h3 class="tags-title">tags</h3>
 	<div class="image-tags">
-		{% for tag in tags %}
+		{% for tag in data.tags %}
 		<a class="tag" href="/i/tag/{{tag}}/">{{tag}}</a>{% if not loop.last %},{% endif %}
 		{% endfor %}
 	</div>
