@@ -6,7 +6,6 @@
 {% else %}
 <h1>images</h1>
 <p><a href="/i/tags">view image tags</a></p>
-<p><a href="rss.xml">rss feed</a></p>
 {% endif %}
 <h3>page {{ data.page }}/{{ data.page_max }}</h3>
 {% if data.previous %}
