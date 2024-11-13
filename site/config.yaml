@@ -1,6 +1,7 @@
 base_url: "https://zyl.gay"
 title: zyl is gay
 description: "zyl's website."
+theme_color: "#ffc4fc"
 sass_styles: [index.scss, pet.scss, click.scss]
 cdn_url: "https://i.zyl.gay"
 code_theme: base16-ocean.dark
