@@ -39,12 +39,12 @@ jobs:
 
       - name: Install webdog
         run: |
-          cargo install webdog --git https://github.com/zyllian/webdog --no-default-features
+          cargo install webdog --git https://github.com/zyllian/webdog --no-default-features --force
 
       # Runs a single command using the runners shell
       - name: Build site
         run: |
-          webdog build --site-path site
+          webdog build --site site
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
