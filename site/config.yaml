@@ -9,8 +9,8 @@ code_theme: base16-ocean.dark
 resources:
   blog:
     source_path: blog
-    output_path_short: blog
-    output_path_long: blog
+    output_path_resources: blog
+    output_path_lists: blog
     resource_template: blog/resource.tera
     resource_list_template: blog/list.tera
     tag_list_template: basic-link-list.tera
@@ -23,8 +23,8 @@ resources:
     resources_per_page: 20
   images:
     source_path: images
-    output_path_short: i
-    output_path_long: images
+    output_path_resources: i
+    output_path_lists: images
     resource_template: image/resource.tera
     resource_list_template: image/list.tera
     tag_list_template: basic-link-list.tera
