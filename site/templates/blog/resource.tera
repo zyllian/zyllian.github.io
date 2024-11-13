@@ -2,7 +2,7 @@
 {% block content %}
 <div class="blog-post">
 	<h1 class="title">{{ data.title }}</h1>
-	<span class="timestamp">published {{ data.timestamp }}</span>
+	<span class="timestamp">published {{ data.readable_timestamp }}</span>
 	{% if data.draft %}
 	<h2>DRAFT</h2>
 	{% endif %}

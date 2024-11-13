@@ -2,7 +2,7 @@
 {% block content %}
 <div class="image-full">
 	<h1 class="title">{{ data.title }}</h1>
-	<span class="timestamp">published {{ data.timestamp }}</span>
+	<span class="timestamp">published {{ data.readable_timestamp }}</span>
 	<img class="image-actual" src="{{data.cdn_file}}" alt="{{data.alt}}">
 	{{ data.content | safe }}
 	<p><a href="{{data.cdn_file}}">view full size image</a></p>

@@ -19,7 +19,7 @@
 	{% for resource in data.resources %}
 	<div class="post">
 		<p class="title"><a href="/blog/{{resource.id}}">{{resource.title}}</a></p>
-		<p class="timestamp">{{resource.timestamp}}</p>
+		<p class="timestamp">{{resource.readable_timestamp}}</p>
 		<p class="short-desc">{{resource.desc}}</p>
 	</div>
 	{% endfor %}
