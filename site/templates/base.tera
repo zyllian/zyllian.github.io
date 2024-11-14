@@ -1,5 +1,9 @@
-{% macro badge(badge, url, alt) %}
+{% macro badge(badge, url="", alt) %}
+{% if url == "" %}
+<img src="/badges/{{badge}}" alt="{{alt}}">
+{% else %}
 <a href="{{url}}"><img src="/badges/{{badge}}" alt="{{alt}}"></a>
+{% endif %}
 {% endmacro badge %}
 
 <!DOCTYPE html>
@@ -38,6 +42,7 @@
 
 		<div class="badges">
 			{{ self::badge(badge="transbian.png", url="https://badge.les.bi", alt="transgender and lesbian flags") }}
+			{{ self::badge(badge="paws.gif", alt="made with my own two paws") }}
 		</div>
 	</footer>
 
