@@ -43,6 +43,7 @@
 		<div class="badges">
 			{{ self::badge(badge="transbian.png", url="https://badge.les.bi", alt="transgender and lesbian flags") }}
 			{{ self::badge(badge="paws.gif", alt="made with my own two paws") }}
+			<abbr title="me :3">{{ self::badge(badge="me.jpg", alt="me!") }}</abbr>
 		</div>
 	</footer>
 
