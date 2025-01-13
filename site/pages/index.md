@@ -17,5 +17,6 @@ if you're an adult i have a couple socials floating around:
 - [federated (sharkey)](me$https://fed.zyl.gay/@zyl)
 - [instagram?](me$https://www.instagram.com/zylbarker/)
 - [tumblr](me$https://www.tumblr.com/zyllian)
+- [bluesky](me$https://bsky.app/profile/zyl.gay)
 
 if you like what i do or just wanna help me out [check out my payment info](/pay-me) :)
