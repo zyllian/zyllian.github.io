@@ -38,11 +38,12 @@
 	<div class="flex-spacer"></div>
 	<hr>
 	<footer id="footer">
-		bark bark awruff :3 &bullet; powered by <strong><a href="https://webdog.zyl.gay">webdog</a></strong>
+		bark bark awruff :3 &bullet; powered by <strong><a href="https://webdog.zyl.gay">webdog</a></strong> &bullet; <a href="https://git.zyl.gay/zyl">git.zyl.gay</a>
 
 		<div class="badges">
 			{{ self::badge(badge="transbian.png", url="https://badge.les.bi", alt="transgender and lesbian flags") }}
 			{{ self::badge(badge="paws.gif", alt="made with my own two paws") }}
+			<abbr title="me :3">{{ self::badge(badge="me.jpg", alt="me!") }}</abbr>
 		</div>
 	</footer>
 
