@@ -1,0 +1,16 @@
+{% if "class" in userdata %}
+{% set class = userdata.class %}
+{% else %}
+{% set class = "" %}
+{% endif %}
+
+{% if "alt" in userdata %}
+{% set alt = userdata.alt %}
+{% else %}
+{% set alt = "" %}
+{% endif %}
+
+<div class="image {{class}}">
+	<a href="{{userdata.src}}"><img src="{{userdata.src}}" alt="{{alt}}"></a>
+	<span>{{ page | safe }}</span>
+</div>
