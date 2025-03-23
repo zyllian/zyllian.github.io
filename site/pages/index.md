@@ -14,6 +14,7 @@ if you're interested, check out [my youtube](me$https://youtube.com/@zylpup) to 
 
 if you're an adult i have a couple socials floating around:
 
+- [federated](me$https://fed.zyl.gay/@zyl)
 - [instagram?](me$https://www.instagram.com/zylbarker/)
 - [tumblr](me$https://www.tumblr.com/zyllian)
 - [bluesky](me$https://bsky.app/profile/zyl.gay)
