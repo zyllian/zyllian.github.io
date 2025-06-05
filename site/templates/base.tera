@@ -13,6 +13,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<meta name="referrer" content="no-referrer">
 	<link rel="stylesheet" href="/styles/index.css">
+	<script src="/js/pet-me.js" defer></script>
 </head>
 
 <body>
@@ -38,7 +39,8 @@
 	<div class="flex-spacer"></div>
 	<hr>
 	<footer id="footer">
-		bark bark awruff :3 &bullet; powered by <strong><a href="https://webdog.zyl.gay">webdog</a></strong> &bullet; <a href="https://git.zyl.gay/zyl">git.zyl.gay</a>
+		bark bark awruff :3 &bullet; powered by <strong><a href="https://webdog.zyl.gay">webdog</a></strong> &bullet; <a
+			href="https://git.zyl.gay/zyl">git.zyl.gay</a>
 
 		<div class="badges">
 			{{ self::badge(badge="transbian.png", url="https://badge.les.bi", alt="transgender and lesbian flags") }}
