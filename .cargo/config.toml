@@ -1,3 +1,0 @@
-[target.x86_64-pc-windows-msvc]
-linker = "ld.lld.exe"
-rustflags = ["-C", "link-arg=-fuse-ld=lld"]
