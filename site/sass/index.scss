@@ -53,6 +53,11 @@ hr {
 
 footer#footer {
   margin: 8px;
+
+  .neopets {
+    display: flex;
+    flex-direction: column;
+  }
 }
 
 abbr {

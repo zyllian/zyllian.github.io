@@ -47,6 +47,12 @@
 			{{ self::badge(badge="paws.gif", alt="made with my own two paws") }}
 			<abbr title="me :3">{{ self::badge(badge="me.jpg", alt="me!") }}</abbr>
 		</div>
+
+		<a class="neopets" href='//www.neopets.com/refer.phtml?username=zylpup' target='_blank'>
+			<img src='//pets.neopets.com/cp/7ssgqdjj/1/3.png' width='80' height='80' border='0'
+				title='Get your own Neopet at neopets.com!'>
+			<img src='https://images.neopets.com/badges/badge_footer16.gif' width='80' height='20' border='0'>
+		</a>
 	</footer>
 
 	<div id="pet-counter">
